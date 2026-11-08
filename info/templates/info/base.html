@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>{% block title %}{% endblock %}</title>
+    {% load static %}
+
+    <!-- Bootstrap core CSS-->
+    <link
+      href="{% static '/info/bootstrap/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom fonts for this template-->
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!-- Page level plugin CSS-->
+    <link
+      href="{% static '/info/bootstrap/vendor/datatables/dataTables.bootstrap4.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom styles for this template-->
+    <link
+      href="{% static '/info/bootstrap/css/sb-admin.css' %}"
+      rel="stylesheet"
+    />
+
+    <style>
+      body[data-theme='light'] {
+        --erp-page-bg: #f4f7fb;
+        --erp-text: #111827;
+        --erp-surface: #ffffff;
+        --erp-border: #d1d5db;
+        --erp-nav-bg: #ffffff;
+        --erp-nav-text: #1f2937;
+        --erp-sidebar-bg: #eef2f7;
+        --erp-sidebar-text: #1f2937;
+        --erp-sidebar-hover: #dbe5f2;
+      }
+
+      body[data-theme='dark'] {
+        --erp-page-bg: #0f172a;
+        --erp-text: #e5e7eb;
+        --erp-surface: #1e293b;
+        --erp-border: #334155;
+        --erp-nav-bg: #111827;
+        --erp-nav-text: #f3f4f6;
+        --erp-sidebar-bg: #111827;
+        --erp-sidebar-text: #cbd5e1;
+        --erp-sidebar-hover: #1e293b;
+      }
+
+      body[data-theme] {
+        background: var(--erp-page-bg);
+        color: var(--erp-text);
+      }
+
+      .top-navbar {
+        background: var(--erp-nav-bg) !important;
+        border-bottom: 1px solid var(--erp-border);
+      }
+
+      .top-navbar .navbar-brand,
+      .top-navbar .nav-link,
+      .top-navbar .btn-link,
+      .top-navbar .fas {
+        color: var(--erp-nav-text) !important;
+      }
+
+      .sidebar {
+        background-color: var(--erp-sidebar-bg) !important;
+      }
+
+      .sidebar .nav-item .nav-link {
+        color: var(--erp-sidebar-text) !important;
+      }
+
+      .sidebar .nav-item .nav-link:hover,
+      .sidebar .nav-item .nav-link:focus {
+        background: var(--erp-sidebar-hover);
+      }
+
+      #content-wrapper {
+        background: var(--erp-page-bg);
+        color: var(--erp-text);
+      }
+
+      body[data-theme='dark'] .card,
+      body[data-theme='dark'] .modal-content,
+      body[data-theme='dark'] .table,
+      body[data-theme='dark'] .dropdown-menu,
+      body[data-theme='dark'] .list-group-item,
+      body[data-theme='dark'] .breadcrumb,
+      body[data-theme='dark'] .form-control,
+      body[data-theme='dark'] .custom-select,
+      body[data-theme='dark'] .input-group-text,
+      body[data-theme='dark'] .alert {
+        background-color: var(--erp-surface);
+        color: var(--erp-text);
+        border-color: var(--erp-border);
+      }
+
+      body[data-theme='dark'] .table thead th {
+        border-color: var(--erp-border);
+      }
+    </style>
+
+    <!-- Latest compiled and minified CSS -->
+
+    {% block css %} {% endblock %}
+  </head>
+
+  <body id="page-top" data-theme="{{ theme_mode|default:'light' }}">
+    <nav class="navbar navbar-expand static-top top-navbar">
+      <a class="navbar-brand mr-1" href="{% url 'index' %}">CollegeERP</a>
+
+      <button
+        class="btn btn-link btn-sm text-white order-1 order-sm-0"
+        id="sidebarToggle"
+        href="#"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- Navbar -->
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          {% if request.resolver_match.url_name == 'index' %}
+          {% elif request.resolver_match.url_name == 'home' %}
+          {% elif request.resolver_match.url_name == 'teacher_home' %}
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'index' %}">Home</a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            {% if request.user.is_student %}
+            <a class="nav-link position-relative" href="{% url 'notice' %}">
+              Notices {% if has_new_notices %}
+              <span
+                style="
+                  position: absolute;
+                  top: 8px;
+                  right: 2px;
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 50%;
+                  background: #dc3545;
+                  border: 1px solid #fff;
+                "
+              >
+              </span>
+              {% endif %}
+            </a>
+            {% elif request.user.is_teacher %}
+            <a class="nav-link position-relative" href="{% url 'notice' %}">
+              Notices {% if has_new_notices %}
+              <span
+                style="
+                  position: absolute;
+                  top: 8px;
+                  right: 2px;
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 50%;
+                  background: #dc3545;
+                  border: 1px solid #fff;
+                "
+              >
+              </span>
+              {% endif %}
+            </a>
+
+            {% endif %}
+          </li>
+          {% if request.user.is_student %}
+          <li>
+            <a class="nav-link" href="{% url 'student_subjects' %}">Subjects</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_fees' %}">Pay Fees</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_course_teachers' %}">Teachers</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_my_report_pdf' %}">My Report</a>
+          </li>
+          
+          <li>
+            <a class="nav-link" href="{% url 'student_leave_apply' %}">Apply Leave</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_document_vault' %}">Document Vault</a>
+          </li>
+         
+          
+          {% endif %} {% if request.user.is_teacher %}
+          <li>
+            <a class="nav-link position-relative" href="{% url 't_student' %}">
+              Students
+            </a>
+          </li>
+          <li>
+            <a
+              class="nav-link position-relative"
+              href="{% url 'teacher_timetable' request.user.teacher.id %}#show-modal"
+            >
+              Show Timetable
+            </a>
+          </li>
+          <li>
+            <a
+              class="nav-link position-relative"
+              href="{% url 'download_latest_attendance_pdf' %}"
+            >
+              Attendance PDF
+            </a>
+          </li>
+          <li>
+            <a class="nav-link position-relative" href="{% url 'teacher_leave_apply' %}">
+              Apply Leave
+            </a>
+          </li>
+         
+          {% endif %}
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              data-toggle="modal"
+              data-target="#logoutModal"
+              >Logout</a
+            >
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div id="wrapper">
+      {% block sidebar %}
+      {% if not request.user.is_superuser %}
+      <!-- Sidebar -->
+      <ul class="sidebar navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'home' %}">
+            <span>Home</span>
+          </a>
+        </li>
+        {% if request.user.is_student %}
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'attendance' request.user.student.roll %}"
+          >
+            <span>Attendance</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'marks_list' request.user.student.roll %}"
+          >
+            <span>Marks</span>
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'student_exam_schedule' %}">
+            <span>Exams</span>
+          </a>
+        </li>
+       
+        <li class="nav-item">
+          {% if request.user.student.current_session_id %}
+          <a
+            class="nav-link"
+            href="{% url 'timetable' request.user.student.current_session_id %}"
+          >
+            <span>Time Table</span>
+          </a>
+          {% else %}
+          <a class="nav-link disabled text-muted"><span>Time Table</span></a>
+          {% endif %}
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="{% url 'student_notes' %}">
+            <span>Notes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'student_assignments' %}">Assignments</a>
+          </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'student_counseling_support' %}">
+            <span>Counseling Support</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'student_document_vault' %}">
+            <span>Document Vault</span>
+          </a>
+        </li>
+
+        {% elif request.user.is_teacher %}
+        {% if can_manage_subjects %}
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'add_subject' request.user.teacher.id %}"
+          >
+            <span>Add Subject</span>
+          </a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'home' %}?open_attendance=1">
+            <span>Attendance</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'exam_list' %}">Manage Exams</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'exam_marks_list' %}">Enter Marks</a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'edit_timetable' request.user.teacher.id %}"
+          >
+            <span>Time Table</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_reports' %}">
+            <span>Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_notes' %}">
+            <span>Notes Sharing</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_shared_documents' %}">
+            <span>Shared Documents</span>
+          </a>
+        </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'teacher_assignments' %}">
+                Assignments
+              </a>
+            </li>
+        {% if can_manage_subjects %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_student_leave_requests' %}">
+            <span>Student Leave Requests</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_student_counseling_requests' %}">
+            Counseling Requests
+          </a>
+        </li>
+        {% endif %}
+        
+        {% endif %}
+      </ul>
+      {% endif %}
+      {% endblock %}
+
+      <div id="content-wrapper">
+        <div class="container-fluid">
+          <!-- Breadcrumbs-->
+
+          <!-- <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="index.html">Dashboard</a>
+            </li>
+
+            <li class="breadcrumb-item active">Blank Page</li>
+          </ol> -->
+
+          <!-- Page Content -->
+          {% block content %} {% endblock %}
+        </div>
+        <!-- /.container-fluid -->
+
+        <!-- Sticky Footer -->
+
+        <!-- <footer class="sticky-footer">
+          <div class="container my-auto">
+            <div class="copyright text-center my-auto">
+              <span>Copyright © Your Website 2018</span>
+            </div>
+          </div>
+        </footer> -->
+      </div>
+      <!-- /.content-wrapper -->
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+      <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div
+      class="modal fade"
+      id="logoutModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+            <button
+              class="close"
+              type="button"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Select "Logout" below if you are ready to end your current session.
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <form action="{% url 'logout' %}" method="post" style="display: inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static '/info/bootstrap/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/info/bootstrap/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static '/info/bootstrap/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static '/info/bootstrap/js/sb-admin.min.js' %}"></script>
+    <script src="{% static 'info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    {% block scripts %} {% endblock %}
+  </body>
+</html>

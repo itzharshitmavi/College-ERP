@@ -1,0 +1,109 @@
+{% extends 'info/base.html' %} {% load dict_extras %} {% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="mb-1">Exam Marks Entry</h2>
+      <div class="text-muted">
+        {{ exam.subject.name }} | {{ exam.exam_type }} | {{ exam.session.name }}
+        | Semester {{ exam.semester }}
+      </div>
+    </div>
+    <a href="{% url 'exam_marks_list' %}" class="btn btn-outline-secondary"
+      >Back to Exam List</a
+    >
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <strong>Total Marks:</strong> {{ exam.total_marks }}
+        </div>
+        <div class="col-md-4">
+          <strong>Exam Date:</strong>
+          {{ exam.date_conducted|date:"d-M-Y"}}
+        </div>
+        <div class="col-md-4">
+          <strong>Exam Time:</strong>
+          {% if exam.exam_time %}{{ exam.exam_time|time:"h:i A" }}{%else%}<span
+            class="text-muted"
+            >Not set</span
+          >{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="card">
+      <div class="card-header">
+        <strong>Enter Marks for Scheduled Students</strong>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Roll</th>
+              <th>Student Name</th>
+              <th style="max-width: 180px">Marks Obtained</th>
+              <th>Absent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+            <tr>
+              <td>{{ student.roll|default:'-' }}</td>
+              <td>{{ student.name }}</td>
+              <td>
+                <input
+                  type="number"
+                  min="0"
+                  max="{{ exam.total_marks }}"
+                  class="form-control"
+                  name="marks_{{ student.id }}"
+                  value="{% if marks_map|get_item:student.id and not marks_map|get_item:student.id.is_absent %}{{ marks_map|get_item:student.id.marks_obtained }}{% endif %}"
+                />
+              </td>
+              <td>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="absent_{{ student.id }}"
+                    id="absent_{{ student.id }}"
+                    {%
+                    if
+                    marks_map|get_item:student.id
+                    and
+                    marks_map|get_item:student.id.is_absent
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label" for="absent_{{ student.id }}"
+                    >Yes</label
+                  >
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">
+                No scheduled students found for this exam.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer d-flex justify-content-between">
+        <small class="text-muted"
+          >Enter marks or mark absent for each student.</small
+        >
+        <button type="submit" class="btn btn-primary">Save Marks</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

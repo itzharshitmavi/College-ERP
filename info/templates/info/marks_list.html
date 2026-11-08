@@ -1,0 +1,337 @@
+{% extends 'info/base.html' %}
+{% load static %}
+{% block css %}
+<style>
+  .marks-hero {
+    border-radius: 14px;
+    background: linear-gradient(120deg, #17324d 0%, #1f6f8b 100%);
+    color: #fff;
+    padding: 1.2rem 1.25rem;
+    box-shadow: 0 10px 24px rgba(16, 46, 72, 0.22);
+  }
+
+  .marks-hero h4 {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+  }
+
+  .marks-hero p {
+    margin: 0;
+    opacity: 0.92;
+  }
+
+  .filter-card,
+  .table-card,
+  .metric-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .filter-card .form-control {
+    min-width: 150px;
+  }
+
+  .stats-grid .metric-card {
+    overflow: hidden;
+  }
+
+  .metric-card .metric-title {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .metric-card .metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-accent-subjects { border-top: 4px solid #0d6efd; }
+  .metric-accent-exams { border-top: 4px solid #0ca678; }
+  .metric-accent-entered { border-top: 4px solid #7b2cbf; }
+  .metric-accent-absent { border-top: 4px solid #f59f00; }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .quick-chip {
+    border: 1px solid #d6dee6;
+    border-radius: 999px;
+    background: #fff;
+    color: #264653;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+  }
+
+  .quick-chip:hover,
+  .quick-chip.active {
+    background: #f2f8fc;
+  }
+
+  .table thead th {
+    white-space: nowrap;
+    background: #f8fbfd;
+  }
+
+  .subject-cell {
+    font-weight: 600;
+  }
+
+  .mark-entered {
+    color: #0b8f5a;
+    font-weight: 700;
+  }
+
+  .mark-absent {
+    color: #c92a2a;
+    font-weight: 700;
+  }
+
+  .mark-pending {
+    color: #7a5a00;
+    font-weight: 700;
+  }
+
+  .empty-state {
+    padding: 1.3rem;
+    text-align: center;
+    color: #6c757d;
+  }
+
+  @media (max-width: 768px) {
+    .filter-card form {
+      display: block !important;
+    }
+
+    .filter-card .form-group,
+    .filter-card .btn {
+      width: 100%;
+      margin-right: 0 !important;
+    }
+
+    .filter-card .form-control {
+      width: 100%;
+    }
+
+    .metric-card .metric-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="marks-hero mb-3">
+    <h4>My Marks Dashboard</h4>
+    <p>Filter your academic records by session, semester, and exam type to review marks with the same live experience as the exam schedule.</p>
+  </div>
+
+  <div class="card filter-card mb-3">
+    <div class="card-body">
+      <form method="get" class="form-inline">
+        <div class="form-group mr-2 mb-2">
+          <select name="session" class="form-control">
+            <option value="">All Sessions</option>
+            {% for sid, sname in sessions %}
+            <option value="{{ sid }}" {% if selected_session == sid|stringformat:'s' %}selected{% endif %}>{{ sname }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="semester" class="form-control">
+            <option value="">All Semesters</option>
+            {% for sem in semesters %}
+            <option value="{{ sem }}" {% if selected_semester == sem|stringformat:'s' %}selected{% endif %}>Semester {{ sem }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="exam_type" class="form-control">
+            <option value="">All Exam Types</option>
+            {% for exam_t, exam_label in exam_types %}
+            <option value="{{ exam_t }}" {% if selected_exam_type == exam_t %}selected{% endif %}>{{ exam_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2 flex-grow-1" style="min-width: 220px;">
+          <input type="text" id="marksQuickSearch" class="form-control w-100" placeholder="Quick search by subject or session" />
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Apply</button>
+        <a href="{% url 'marks_list' student.roll|default:student.id %}" class="btn btn-outline-secondary mb-2 ml-2">Reset</a>
+      </form>
+      {% if filters_applied %}
+      <div class="chip-row mt-2">
+        <button type="button" class="quick-chip active" data-chip="all">Show All</button>
+        <button type="button" class="quick-chip" data-chip="entered">Marks Entered</button>
+        <button type="button" class="quick-chip" data-chip="absent">Absent</button>
+        <button type="button" class="quick-chip" data-chip="pending">Pending</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if filters_applied %}
+  <div class="row mb-3 stats-grid">
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-subjects h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Subjects</div>
+          <div class="metric-value">{{ summary.subjects_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-exams h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Conducted Exams</div>
+          <div class="metric-value">{{ summary.exams_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-entered h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Marks Entered</div>
+          <div class="metric-value">{{ summary.entered_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-absent h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Absent</div>
+          <div class="metric-value">{{ summary.absent_count }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card table-card mb-3">
+    <div class="card-header">
+      <i class="fas fa-table"></i>
+      <b>Marks</b>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Session</th>
+              <th>Semester</th>
+              {% for exam_type in exam_type_headers %}
+              <th>{{ exam_type }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in marks_rows %}
+            <tr class="marks-row" data-row-text="{{ row.subject_name }} {{ row.session_name }}" data-status="{% if 'AB' in row.marks_cells %}absent{% elif '-' in row.marks_cells %}pending{% else %}entered{% endif %}">
+              <td class="subject-cell">{{ row.subject_name }}</td>
+              <td class="session-cell">{{ row.session_name }}</td>
+              <td>Semester {{ row.semester }}</td>
+              {% for mark_value in row.marks_cells %}
+              <td>
+                {% if mark_value == 'AB' %}
+                <span class="mark-absent">AB</span>
+                {% elif mark_value == '-' %}
+                <span class="mark-pending">-</span>
+                {% else %}
+                <span class="mark-entered">{{ mark_value }}</span>
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="{{ exam_type_headers|length|add:'3' }}" class="text-center">
+                No conducted exam marks available yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="marksEmptyState" class="empty-state d-none">No marks match the quick search/filter.</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info mb-3">
+    Select both <b>Session</b> and <b>Semester</b> to view marks.
+  </div>
+  {% endif %}
+</div>
+
+{% if filters_applied %}
+<script>
+  (function () {
+    var searchInput = document.getElementById('marksQuickSearch');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.marks-row'));
+    var emptyState = document.getElementById('marksEmptyState');
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.quick-chip'));
+    var currentChip = 'all';
+
+    function matchChip(row) {
+      var status = (row.getAttribute('data-status') || '').toLowerCase();
+      if (currentChip === 'entered') {
+        return status === 'entered';
+      }
+      if (currentChip === 'absent') {
+        return status === 'absent';
+      }
+      if (currentChip === 'pending') {
+        return status === 'pending';
+      }
+      return true;
+    }
+
+    function matchSearch(row, query) {
+      if (!query) {
+        return true;
+      }
+      var text = (row.getAttribute('data-row-text') || '').toLowerCase();
+      return text.indexOf(query) !== -1;
+    }
+
+    function applyFilters() {
+      var query = searchInput ? (searchInput.value || '').trim().toLowerCase() : '';
+      var visibleCount = 0;
+
+      rows.forEach(function (row) {
+        var visible = matchChip(row) && matchSearch(row, query);
+        row.style.display = visible ? '' : 'none';
+        if (visible) {
+          visibleCount += 1;
+        }
+      });
+
+      if (emptyState) {
+        emptyState.classList.toggle('d-none', visibleCount !== 0 || rows.length === 0);
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        currentChip = chip.getAttribute('data-chip') || 'all';
+        chips.forEach(function (item) { item.classList.remove('active'); });
+        chip.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    applyFilters();
+  })();
+</script>
+{% endif %}
+{% endblock %}

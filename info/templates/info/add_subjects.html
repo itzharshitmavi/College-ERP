@@ -1,0 +1,359 @@
+{% extends 'info/base.html' %}
+{% load static %}
+
+{% block head %}
+  <title>Add Subjects</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+  <link href="{% static 'info/homepage/css/heroic-features.css' %}" rel="stylesheet" />
+  <link href="{% static 'info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css" />
+
+  <style>
+    .page-shell {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+    .page-hero {
+      border-radius: 12px;
+      background: linear-gradient(120deg, #183650 0%, #1f6f8b 100%);
+      color: #fff;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 10px 24px rgba(12, 42, 67, 0.18);
+    }
+    .page-hero h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .page-hero p {
+      margin: 0.25rem 0 0;
+      opacity: 0.92;
+    }
+    .surface-card {
+      border: 0;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+    }
+    .section-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #334155;
+    }
+    .subjects-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .subjects-table thead th {
+      background: #f8fbfd;
+      color: #334155;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .subjects-table td,
+    .subjects-table th {
+      padding: 0.68rem 0.8rem;
+    }
+    .subjects-table tbody td {
+      border-top: 1px solid #eef2f7;
+    }
+    .subjects-table tbody tr:nth-child(even) {
+      background: #fcfdff;
+    }
+    .subjects-table tbody tr:hover {
+      background: #f3f8ff;
+    }
+    select[multiple] {
+      border: 1px solid #ced4da;
+      padding: 5px;
+      border-radius: 4px;
+      background-color: #fff;
+      font-size: 14px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    select[multiple]:disabled {
+      color: #888;
+      background-color: #f8f9fa;
+    }
+    .modal-body .scrollable-pane {
+      max-height: 450px;
+      overflow-y: auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      border-radius: 12px;
+      border: 1.5px solid #ced4da;
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.05);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: flex-start;
+      scrollbar-width: thin;
+      scrollbar-color: #90caf9 #e3f2fd;
+    }
+    .modal-body .scrollable-pane::-webkit-scrollbar {
+      width: 8px;
+    }
+    .modal-body .scrollable-pane::-webkit-scrollbar-track {
+      background: #e3f2fd;
+      border-radius: 16px;
+    }
+    .modal-body .scrollable-pane::-webkit-scrollbar-thumb {
+      background-color: #90caf9;
+      border-radius: 16px;
+      border: 2px solid #e3f2fd;
+    }
+    .modal-body .scrollable-pane > div:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(33, 150, 243, 0.2);
+      transition: 0.3s ease;
+      z-index: 5;
+    }
+    @media (max-width: 768px) {
+      .page-shell {
+        max-width: 100%;
+      }
+      .subjects-table td,
+      .subjects-table th {
+        padding: 0.58rem 0.65rem;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid mt-4 page-shell">
+    <div class="page-hero mb-3">
+      <h2>Add Subject</h2>
+      <p>Create subjects and manage existing ones from one clean workspace.</p>
+    </div>
+
+    <div class="card surface-card mb-3">
+      <div class="card-body">
+        <h5 class="section-title mb-3">Add Subject Form</h5>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+              <input type="text" name="subject_name" class="form-control" placeholder="Subject Name" required />
+            </div>
+            <div class="col-md-2">
+              <input type="text" name="subject_code" class="form-control" placeholder="Code" required />
+            </div>
+            <div class="col-md-2">
+              <select name="subject_type" class="form-select" required>
+                <option value="">Type</option>
+                <option value="Theory">Theory</option>
+                <option value="Practical">Practical</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select name="session" class="form-select" required>
+                <option value="">Session</option>
+                {% for sess in sessions %}
+                  <option value="{{ sess.id }}">{{ sess.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select name="semester" class="form-select" required>
+                <option value="">Semester</option>
+                {% for sem_val, sem_name in semester %}
+                  <option value="{{ sem_val }}">{{ sem_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-12">
+              <select id="teacher" name="teachers" class="form-select" multiple required disabled>
+                <option value="">Select Teacher</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary w-100">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card surface-card mb-3">
+      <div class="card-body">
+        <h5 class="section-title mb-3">Filter Subjects</h5>
+        <form method="get" class="row g-3 align-items-end mb-0">
+          <div class="col-md-2">
+            <label for="sessionFilter" class="form-label">Session</label>
+            <select id="sessionFilter" name="session" class="form-select">
+              <option value="">Sessions</option>
+              {% for sess in sessions %}
+                <option value="{{ sess.id }}"  {% if sess.id|stringformat:"s" == selected_session|stringformat:"s" %}selected{% endif %}>{{ sess.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label for="semesterFilter" class="form-label">Semester</label>
+            <select id="semesterFilter" name="semester" class="form-select">
+              <option value="">Semesters</option>
+              {% for sem_val, sem_name in semester %}
+                <option value="{{ sem_val }}" {% if sem_val|stringformat:"s" == selected_semester|stringformat:"s" %}selected{% endif %}>{{ sem_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label for="rollNoSearch" class="form-label">Name</label>
+            <input
+              type="alzebric"
+              id="rollNoSearch"
+              name="Name Of Subject"
+              value="{{ request.GET.name|default_if_none:'' }}"
+              class="form-control"
+              placeholder="Enter Name Of Subject"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">Filter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card surface-card">
+      <div class="card-body">
+        <h5 class="section-title mb-3">All Subjects</h5>
+        <div class="table-responsive">
+          <table class="table subjects-table table-hover align-middle mb-0">
+            <thead class="text-center">
+              <tr>
+                <th scope="col" style="width: 10%">Code</th>
+                <th scope="col" style="width: 25%">Name</th>
+                <th scope="col" style="width: 15%">Type</th>
+                <th scope="col" style="width: 15%">Session</th>
+                <th scope="col" style="width: 10%">Semester</th>
+                <th scope="col" style="width: 10%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sub in subjects %}
+              <tr class="text-center">
+                <td>{{ sub.code }}</td>
+                <td class="text-start">{{ sub.name }}</td>
+                <td>
+                  {% if sub.type == "Theory" %}
+                    <span class="badge bg-success px-3 py-2 fs-6">Theory</span>
+                  {% elif sub.type == "Practical" %}
+                    <span class="badge bg-info text-dark px-3 py-2 fs-6">Practical</span>
+                  {% else %}
+                    <span class="badge bg-secondary px-3 py-2 fs-6">{{ sub.type }}</span>
+                  {% endif %}
+                </td>
+
+                <td>{{ sub.session.name }}</td>
+                <td>{{ sub.semester }}</td>
+                <td class="d-flex gap-2 justify-content-center align-items-center">
+                  <a type="button" class="btn btn-info btn-sm assigned-teachers-btn" data-bs-toggle="modal" data-subject-id="{{ sub.id }}"
+                     data-bs-target="#assignedTeachersModal">
+                    Teachers
+                    <i class="fas fa-user"></i>
+                  </a>
+
+                  <a href="{% url 'delete_subject' sub.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this subject?');">
+                    Delete
+                    <i class="fas fa-trash-alt"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center">No subjects added yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assigned Teachers Modal -->
+  <div class="modal fade" id="assignedTeachersModal" tabindex="-1" aria-labelledby="assignedTeachersLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="assignedTeachersLabel">Assigned Teachers</h5>
+        </div>
+        <div class="modal-body" id="modalTeachersContent"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript dependencies -->
+  <script src="{% static 'info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const teacherSelect = document.getElementById("teacher");
+    // Show loading message and disable select while fetching
+    teacherSelect.innerHTML = '<option>Loading teachers...</option>';
+    teacherSelect.disabled = true;
+
+    fetch('/api/teachers/')
+      .then(response => response.json())  // Parse JSON from response
+      .then(data => {
+        teacherSelect.disabled = false;
+        teacherSelect.innerHTML = '<option value="">Select Teacher</option>';
+
+        // Populate select with fetched teacher data
+        data.teachers.forEach(teacher => {
+          const option = document.createElement("option");
+          option.value = teacher.id;       // Option value = teacher ID
+          option.textContent = teacher.name;  // Display name
+          teacherSelect.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading teachers:', error);
+        teacherSelect.innerHTML = '<option value="">Error loading teachers</option>';
+        teacherSelect.disabled = true;
+      });
+      // Load assigned teachers modal content
+      $(".assigned-teachers-btn").on("click", function () {
+        var subjectId = $(this).data("subject-id");
+        var url = "/subject/" + subjectId + "/teachers/";
+
+        $("#modalTeachersContent").html(
+          '<div class="text-center py-5">' +
+            '<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>' +
+          "</div>"
+        );
+
+        $.get(url)
+          .done(function (data) {
+            $("#modalTeachersContent").html(data);
+          })
+          .fail(function () {
+            $("#modalTeachersContent").html(
+              '<p class="text-danger">Failed to load teachers.</p>'
+            );
+          });
+      });
+    });
+  </script>
+{% endblock %}

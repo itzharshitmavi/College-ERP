@@ -1,0 +1,12 @@
+{% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'teacher_home' or request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'pending_requests_list' or request.resolver_match.url_name == 'approve_requests' %}
+<div class="theme-toggle-floating">
+  <form action="{% url 'set_theme_mode' %}" method="post" class="mb-0">
+    {% csrf_token %}
+    <input type="hidden" name="theme_mode" value="{% if theme_mode == 'dark' %}light{% else %}dark{% endif %}" />
+    <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+    <button type="submit" class="btn btn-sm btn-outline-secondary bg-white">
+      {% if theme_mode == 'dark' %}Light Mode{% else %}Dark Mode{% endif %}
+    </button>
+  </form>
+</div>
+{% endif %}

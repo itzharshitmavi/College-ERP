@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Profile</title>
+
+    {% load static %}
+
+    <!-- Bootstrap core CSS -->
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom styles for this template -->
+    <link
+      href="{% static '/info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    {% include 'info/includes/theme_head.html' %}
+
+    <style>
+      body {
+        background-color: #f5f7fa;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .form-container {
+        max-width: 720px;
+        margin: 100px auto 50px;
+        background: #fff;
+        padding: 40px 35px;
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(99, 99, 99, 0.1);
+        transition: box-shadow 0.3s ease-in-out;
+      }
+      .form-container:hover {
+        box-shadow: 0 12px 40px rgba(99, 99, 99, 0.15);
+      }
+      h2 {
+        color: #007bff;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+      }
+      .form-label {
+        font-weight: 600;
+        color: #4a4a4a;
+      }
+      .btn-primary {
+        padding: 10px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 30px;
+        transition: background-color 0.3s ease;
+      }
+      .btn-primary:hover {
+        background-color: #0056b3;
+      }
+      .list-group-item {
+        font-size: 0.9rem;
+      }
+      .scrollable-container {
+        max-height: 320px;
+        overflow-y: auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .text-danger {
+        margin-top: 4px;
+      }
+      hr {
+        margin: 40px 0;
+        border-top: 1px solid #dee2e6;
+      }
+      a.btn-warning {
+        font-weight: 600;
+        border-radius: 30px;
+        padding: 10px 0;
+        font-size: 1rem;
+      }
+    </style>
+  </head>
+
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    {% if messages %}
+    <div>
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a
+                href="{% url 'approve' %}"
+                onclick="window.location.reload(true);"
+                class="nav-link"
+              >
+                Home
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container form-container">
+      <h2>Admin Profile</h2>
+
+      <!-- Profile Edit Form -->
+      <form method="post" action="{% url 'admin_profile_update' %}" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_first_name" class="form-label">First Name</label>
+          <input
+            type="text"
+            name="first_name"
+            id="id_first_name"
+            value="{{ form.first_name.value|default_if_none:'' }}"
+            class="form-control"
+            placeholder="Enter first name"
+          />
+          {% for error in form.first_name.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_last_name" class="form-label">Last Name</label>
+          <input
+            type="text"
+            name="last_name"
+            id="id_last_name"
+            value="{{ form.last_name.value|default_if_none:'' }}"
+            class="form-control"
+            placeholder="Enter last name"
+          />
+          {% for error in form.last_name.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_email" class="form-label">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="id_email"
+            value="{{ form.email.value|default_if_none:'' }}"
+            class="form-control"
+            placeholder="Enter email"
+          />
+          {% for error in form.email.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+          Update Profile
+        </button>
+      </form>
+
+      <hr />
+
+      <!-- Login Activity -->
+      <h4>Login Activity</h4>
+      <div class="scrollable-container">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>Last Login:</strong> {{ request.user.last_login }}
+          </li>
+        </ul>
+      </div>
+
+      <hr />
+
+      <a href="{% url 'change_password' %}" class="btn btn-warning w-100">
+        Change Password
+      </a>
+
+      <!-- Auto-open modal if errors -->
+      {% if modal_open %}
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          var modal = new bootstrap.Modal(
+            document.getElementById("changePasswordModal")
+          );
+          modal.show();
+        });
+      </script>
+      {% endif %}
+    </div>
+
+    <script src="{% static '/info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+{% extends 'info/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Manage Exams</h2>
+    </div>
+    <div class="col-md-4 text-right">
+      <a href="{% url 'exam_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Schedule New Exam
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="form-inline">
+        <div class="form-group mr-2 mb-2">
+          <select name="session" class="form-control">
+            <option value="">All Sessions</option>
+            {% for sess in sessions %}
+            <option value="{{ sess.id }}" {% if selected_session == sess.id|stringformat:'s' %}selected{% endif %}>
+              {{ sess.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="semester" class="form-control">
+            <option value="">All Semesters</option>
+            {% for sem in semesters %}
+            <option value="{{ sem }}" {% if selected_semester == sem|stringformat:'s' %}selected{% endif %}>
+              Semester {{ sem }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="exam_type" class="form-control">
+            <option value="">All Exam Types</option>
+            {% for exam_t, exam_label in exam_types %}
+            <option value="{{ exam_t }}" {% if selected_exam_type == exam_t %}selected{% endif %}>
+              {{ exam_label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="status" class="form-control">
+            <option value="">All Status</option>
+            {% for stat, stat_label in statuses %}
+            <option value="{{ stat }}" {% if selected_status == stat %}selected{% endif %}>
+              {{ stat_label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-outline-primary mb-2">Filter</button>
+        <a href="{% url 'exam_list' %}" class="btn btn-outline-secondary mb-2 ml-2">Reset</a>
+      </form>
+    </div>
+  </div>
+
+  <!-- Academic Exams Table -->
+  <div class="card">
+    <div class="card-header">
+      <strong>Academic Exams (Sessional 1, Sessional 2, Mid Term)</strong>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Subject</th>
+            <th>Exam Type</th>
+            <th>Session</th>
+            <th>Semester</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Total Marks</th>
+            <th>Students</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exam in academic_exams %}
+          <tr>
+            <td><strong>{{ exam.subject.name }}</strong></td>
+            <td>{{ exam.exam_type }}</td>
+            <td>{{ exam.session.name }}</td>
+            <td>Semester {{ exam.semester }}</td>
+            <td>
+              {% if exam.date_conducted %}
+                {{ exam.date_conducted|date:"d-M-Y" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if exam.exam_time %}
+                {{ exam.exam_time|time:"h:i A" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>{{ exam.total_marks }}</td>
+            <td>{{ exam.scheduled_students.count }}</td>
+            <td>
+              {% if exam.status == 'Conducted' %}
+              <span class="badge bg-success">Conducted</span>
+              {% else %}
+              <span class="badge bg-warning">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if exam.status == 'Pending' %}
+              <form method="post" action="{% url 'exam_mark_conducted' exam.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success">Mark Conducted</button>
+              </form>
+              {% endif %}
+              <a href="{% url 'exam_delete' exam.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this exam?');">Delete</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="text-center text-muted py-4">No academic exams found. <a href="{% url 'exam_create' %}">Schedule one now</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header">
+      <strong>Practical Exams (Internal Practical)</strong>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Subject</th>
+            <th>Exam Type</th>
+            <th>Session</th>
+            <th>Semester</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Total Marks</th>
+            <th>Students</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exam in practical_exams %}
+          <tr>
+            <td><strong>{{ exam.subject.name }}</strong></td>
+            <td>{{ exam.exam_type }}</td>
+            <td>{{ exam.session.name }}</td>
+            <td>Semester {{ exam.semester }}</td>
+            <td>
+              {% if exam.date_conducted %}
+                {{ exam.date_conducted|date:"d-M-Y" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if exam.exam_time %}
+                {{ exam.exam_time|time:"h:i A" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>{{ exam.total_marks }}</td>
+            <td>{{ exam.scheduled_students.count }}</td>
+            <td>
+              {% if exam.status == 'Conducted' %}
+              <span class="badge bg-success">Conducted</span>
+              {% else %}
+              <span class="badge bg-warning">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if exam.status == 'Pending' %}
+              <form method="post" action="{% url 'exam_mark_conducted' exam.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success">Mark Conducted</button>
+              </form>
+              {% endif %}
+              <a href="{% url 'exam_delete' exam.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this exam?');">Delete</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="text-center text-muted py-4">No practical exams found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

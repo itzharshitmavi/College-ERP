@@ -1,0 +1,240 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Apply Student Leave - College ERP</title>
+
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    {% include 'info/includes/theme_head.html' %}
+    <style>
+      .page-shell {
+        padding-top: 84px;
+        padding-bottom: 24px;
+      }
+
+      .surface-card {
+        background: var(--erp-surface, #fff);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.78rem;
+      }
+
+      .status-pending { background: #fff8e5; color: #8a6d1d; }
+      .status-approved { background: #e8f7ed; color: #1f6f3c; }
+      .status-rejected { background: #fdecec; color: #8d2d2d; }
+    </style>
+  </head>
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="{% url 'index' %}">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            {% if request.resolver_match.url_name != 'index' and request.resolver_match.url_name != 'home' and request.resolver_match.url_name != 'teacher_home' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Home</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+                <a
+              class="nav-link position-relative"
+              href="{% url 'notice' %}"
+            >
+              Notices {% if has_new_notices %}
+              <span
+                style="
+                  position: absolute;
+                  top: 8px;
+                  right: 2px;
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 50%;
+                  background: #dc3545;
+                  border: 1px solid #fff;
+                "
+              >
+              </span>
+              {% endif %}
+            </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'student_subjects' %}">Subjects</a>
+            </li>
+           <li>
+            <a class="nav-link" href="{% url 'student_course_teachers' %}">Teachers</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_my_report_pdf' %}">My Report</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_counseling_support' %}">Counseling Support</a>
+          </li>
+           <li>
+            <a class="nav-link" href="{% url 'student_document_vault' %}">Document Vault</a>
+          </li>
+          
+         
+           
+          
+            <li class="nav-item">
+              <a
+                class="nav-link"
+               href="#"
+                data-toggle="modal"
+                data-target="#logoutModal"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container page-shell">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="mb-0">Apply Student Leave</h3>
+        <small class="text-muted">Your request is automatically sent to your HOD.</small>
+      </div>
+
+      <div class="surface-card mb-3">
+        <div class="card-body">
+          {% if target_hod_assignment %}
+          <div class="alert alert-info py-2 px-3" role="alert">
+            Request will be sent to
+            <strong>{{ target_hod_assignment.teacher.name }}</strong>
+            (HOD: {{ target_hod_assignment.department.name }}, Year {{ target_hod_assignment.year }}, {{ target_hod_assignment.course.name }}).
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="col-md-3 form-group">
+                <label for="id_from_date">From Date</label>
+                <input id="id_from_date" name="from_date" type="date" class="form-control" required>
+              </div>
+              <div class="col-md-3 form-group">
+                <label for="id_to_date">To Date</label>
+                <input id="id_to_date" name="to_date" type="date" class="form-control" required>
+              </div>
+              <div class="col-md-6 form-group">
+                <label for="id_reason">Reason</label>
+                <input id="id_reason" name="reason" type="text" class="form-control" required placeholder="Reason">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Submit Request</button>
+          </form>
+          {% else %}
+          <p class="mb-0 text-muted">No active HOD is assigned for your department/year right now. Please contact admin.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="surface-card">
+        <div class="card-body">
+          <h5 class="mb-3">My Leave Requests</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+              <thead class="thead-light">
+                <tr>
+                  <th>HOD</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Teacher Remark</th>
+                  <th>Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for leave in leave_requests %}
+                <tr>
+                  <td>
+                    {{ leave.teacher.name }}
+                    {% if leave.teacher.dept %}
+                    <small class="text-muted d-block">{{ leave.teacher.dept.name }}</small>
+                    {% endif %}
+                  </td>
+                  <td>{{ leave.from_date|date:"d M Y" }}</td>
+                  <td>{{ leave.to_date|date:"d M Y" }}</td>
+                  <td>{{ leave.reason|truncatechars:90 }}</td>
+                  <td><span class="status-pill status-{{ leave.status|lower }}">{{ leave.status }}</span></td>
+                  <td>{{ leave.teacher_remark|default:'-' }}</td>
+                  <td>{{ leave.created_at|date:"d M Y, h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-3">No leave requests submitted yet.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Select "Logout" below to end your session.
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <form
+              action="{% url 'logout' %}"
+              method="post"
+              style="display: inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static '/info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

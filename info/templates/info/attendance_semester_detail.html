@@ -1,0 +1,299 @@
+{% extends 'info/base.html' %}
+
+{% block css %}
+<style>
+  .sem-att-hero {
+    border-radius: 14px;
+    background: linear-gradient(120deg, #1a3a5a 0%, #206d8c 100%);
+    color: #fff;
+    padding: 1.2rem 1.25rem;
+    box-shadow: 0 10px 24px rgba(16, 46, 72, 0.2);
+  }
+
+  .sem-att-hero h4 {
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+  }
+
+  .sem-att-hero p {
+    margin: 0;
+    opacity: 0.92;
+  }
+
+  .metric-card,
+  .table-card,
+  .toolbar-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .metric-card {
+    overflow: hidden;
+  }
+
+  .metric-title {
+    font-size: 0.82rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-accent-total { border-top: 4px solid #0d6efd; }
+  .metric-accent-present { border-top: 4px solid #198754; }
+  .metric-accent-absent { border-top: 4px solid #dc3545; }
+  .metric-accent-percent { border-top: 4px solid #7b2cbf; }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .quick-chip {
+    border: 1px solid #d6dee6;
+    border-radius: 999px;
+    background: #fff;
+    color: #264653;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+  }
+
+  .quick-chip:hover,
+  .quick-chip.active {
+    background: #f2f8fc;
+  }
+
+  .table thead th {
+    white-space: nowrap;
+    background: #f8fbfd;
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .status-present {
+    background: #e6fcf5;
+    color: #087f5b;
+  }
+
+  .status-absent {
+    background: #fff5f5;
+    color: #c92a2a;
+  }
+
+  .empty-state {
+    padding: 1.2rem;
+    text-align: center;
+    color: #6c757d;
+  }
+
+  @media (max-width: 768px) {
+    .toolbar-form {
+      display: block !important;
+    }
+
+    .toolbar-form .form-group,
+    .toolbar-form .btn {
+      width: 100%;
+      margin-right: 0 !important;
+    }
+
+    .toolbar-form .form-control {
+      width: 100%;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="sem-att-hero mb-3">
+    <h4>Semester Attendance Detail</h4>
+    <p>{{ student.name }} | {{ session_name }} | {{ semester_label }}</p>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-total h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Total Classes</div>
+          <div class="metric-value">{{ total_classes }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-present h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Present</div>
+          <div class="metric-value">{{ classes_attended }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-absent h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Absent</div>
+          <div class="metric-value">{{ absent_classes }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-percent h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Attendance %</div>
+          <div class="metric-value">{{ attendance_percentage }}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card toolbar-card mb-3">
+    <div class="card-body">
+      <form class="form-inline toolbar-form" onsubmit="return false;">
+        <div class="form-group mr-2 mb-2 flex-grow-1" style="min-width: 240px;">
+          <input type="text" id="semesterAttendanceSearch" class="form-control w-100" placeholder="Quick search by date, day, or subject" />
+        </div>
+        <button type="button" class="btn btn-outline-secondary mb-2" id="clearSemesterAttendanceSearch">Clear</button>
+      </form>
+      <div class="chip-row mt-2">
+        <button type="button" class="quick-chip active" data-chip="all">Show All</button>
+        <button type="button" class="quick-chip" data-chip="present">Present</button>
+        <button type="button" class="quick-chip" data-chip="absent">Absent</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card table-card mb-3">
+    <div class="card-header">
+      <i class="fas fa-table"></i>
+      <strong>Class-wise Attendance</strong>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Day</th>
+              <th>Subject</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for att_record in att_records %}
+            <tr class="semester-att-row" data-status="{% if att_record.status %}present{% else %}absent{% endif %}">
+              <td>{{ forloop.counter }}</td>
+              <td class="date-cell">{{ att_record.attendance_record.date|date:"d-M-Y" }}</td>
+              <td class="day-cell">{{ att_record.attendance_record.date|date:"l" }}</td>
+              <td class="subject-cell">{{ att_record.attendance_record.timetable_slot.subject.name }}</td>
+              <td>
+                {% if att_record.status %}
+                <span class="status-pill status-present">Present</span>
+                {% else %}
+                <span class="status-pill status-absent">Absent</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center">No attendance records found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="semesterAttendanceEmpty" class="empty-state d-none">No entries match the current search/filter.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var searchInput = document.getElementById('semesterAttendanceSearch');
+    var clearBtn = document.getElementById('clearSemesterAttendanceSearch');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.semester-att-row'));
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.quick-chip'));
+    var emptyState = document.getElementById('semesterAttendanceEmpty');
+    var currentChip = 'all';
+
+    function matchChip(row) {
+      var status = (row.getAttribute('data-status') || '').toLowerCase();
+      if (currentChip === 'present') {
+        return status === 'present';
+      }
+      if (currentChip === 'absent') {
+        return status === 'absent';
+      }
+      return true;
+    }
+
+    function matchSearch(row, query) {
+      if (!query) {
+        return true;
+      }
+      var dateText = (row.querySelector('.date-cell') || {}).textContent || '';
+      var dayText = (row.querySelector('.day-cell') || {}).textContent || '';
+      var subjectText = (row.querySelector('.subject-cell') || {}).textContent || '';
+      var blob = (dateText + ' ' + dayText + ' ' + subjectText).toLowerCase();
+      return blob.indexOf(query) !== -1;
+    }
+
+    function applyFilters() {
+      var query = searchInput ? (searchInput.value || '').trim().toLowerCase() : '';
+      var visibleCount = 0;
+
+      rows.forEach(function (row) {
+        var visible = matchChip(row) && matchSearch(row, query);
+        row.style.display = visible ? '' : 'none';
+        if (visible) {
+          visibleCount += 1;
+        }
+      });
+
+      if (emptyState) {
+        emptyState.classList.toggle('d-none', visibleCount !== 0 || rows.length === 0);
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+
+    if (clearBtn && searchInput) {
+      clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        applyFilters();
+      });
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        currentChip = chip.getAttribute('data-chip') || 'all';
+        chips.forEach(function (item) { item.classList.remove('active'); });
+        chip.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    applyFilters();
+  })();
+</script>
+{% endblock %}

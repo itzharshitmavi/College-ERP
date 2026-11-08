@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Approve Requests</title>
+    {% load static %}
+    <link
+      href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link href="{% static 'info/homepage/css/icard.css' %}" rel="stylesheet" />
+    {% include 'info/includes/theme_head.html' %}
+  </head>
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a href="{% url 'pending_requests_list' %}" class="nav-link">
+                Home
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="card quick-link-card my-5 mx-auto" style="max-width: 1200px">
+      <div class="card-body p-4">
+        <h4 class="mb-1">Upload Special Updates/Notice</h4>
+        <p class="text-muted mb-4">
+          Publish PDF updates and manage previously uploaded notices.
+        </p>
+        <form
+          method="post"
+          enctype="multipart/form-data"
+          action="{% url 'special_updates_list' %}"
+        >
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="{{ upload_form.title.id_for_label }}" class="form-label"
+              >Title</label
+            >
+            {{ upload_form.title }} {% for error in form.title.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            <label
+              for="{{ upload_form.pdf_file.id_for_label }}"
+              class="form-label"
+              >Select File</label
+            >
+            {{ upload_form.pdf_file }} {% for error in form.pdf_file.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Upload</button>
+        </form>
+
+        <hr class="my-4" />
+
+        <h5>Your Uploaded Updates/Notice</h5>
+        <div
+          class="scrollable-container"
+          style="max-height: 320px; overflow-y: auto"
+        >
+          {% if admin_uploaded_notes %}
+          <ul class="list-group">
+            {% for note in admin_uploaded_notes %}
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <a href="{{ note.pdf_file.url }}" target="_blank"
+                >{{ note.title }}</a
+              >
+              <form
+                method="post"
+                action="{% url 'delete_special_update' note.id %}"
+                style="margin: 0"
+                class="delete-form"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm ms-2">
+                  Delete
+                </button>
+              </form>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted">No uploaded file yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

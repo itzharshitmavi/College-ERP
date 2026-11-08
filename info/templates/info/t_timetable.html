@@ -1,0 +1,158 @@
+{% extends 'info/base.html' %} {% block content %}
+<div class="container mt-4">
+  <h2>Timetable Entries</h2>
+
+  <h4>Add Slot</h4>
+  <form method="post" action="{% url 'edit_timetable' teacher.id %}">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <div class="col">
+        <label for="day" class="form-label">Day</label>
+        <select id="day" name="day" class="form-select" required>
+          <option value="" selected disabled>Select Day</option>
+          {% for day in days_of_week %}
+          <option value="{{ day }}">{{ day }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col">
+        <label for="session" class="form-label">Session</label>
+        <select id="session" name="session" class="form-select" required onchange="filterSubjects()">
+          <option value="" disabled {% if not selected_session %}selected{% endif %}>Select Session</option>
+          {% for sess in session_list %}
+          <option value="{{ sess.id }}" {% if selected_session == sess.id %}selected{% endif %}>
+            {{ sess }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col">
+        <label for="semester" class="form-label">Semester</label>
+        <select id="semester" name="semester" class="form-select" required onchange="filterSubjects()">
+          <option value="" disabled {% if not selected_semester %}selected{% endif %}>Select Semester</option>
+          {% for sem in semester_list %}
+          <option value="{{ sem }}" {% if selected_semester == sem|stringformat:"s" %}selected{% endif %}>
+            Semester {{ sem }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <label for="start_time" class="form-label">Start Time</label>
+        <input
+          type="time"
+          id="start_time"
+          name="start_time"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="col">
+        <label for="end_time" class="form-label">End Time</label>
+        <input
+          type="time"
+          id="end_time"
+          name="end_time"
+          class="form-control"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="subject" class="form-label">Subject</label>
+
+      <select name="subject" id="subject" required>
+        <option value="" disabled selected>Select Subject</option>
+        {% for subject in subjects %}
+        <option value="{{ subject.id }}">{{ subject.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Slot</button>
+  </form>
+
+  <hr />
+
+  <h4>Existing Timetable Entries</h4>
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Day</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Subject</th>
+        <th>Session</th>
+        <th>Semester</th>
+        <th>Department</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for slot in assignments %}
+      <tr>
+        <td>{{ slot.day }}</td>
+        <td>{{ slot.start_time|time:"H:i" }}</td>
+        <td>{{ slot.end_time|time:"H:i" }}</td>
+        <td>{{ slot.subject.name}}</td>
+        <td>{{ slot.session.name }}</td>
+        <td>Semester {{ slot.semester }}</td>
+        <td>{{ slot.department.name }}</td>
+        <td>
+          <form
+            method="post"
+            action="{% url 'delete_timetable_slot' slot.id %}"
+            style="display: inline"
+            onsubmit="return confirm('Delete this slot?');"
+          >
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center text-muted">
+          No timetable entries yet
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+  const allSubjects = JSON.parse('{{ all_subjects_json|escapejs }}');
+
+  function filterSubjects() {
+    const session = document.getElementById("session").value;
+    const semester = document.getElementById("semester").value;
+    const subjectSelect = document.getElementById("subject");
+
+    subjectSelect.innerHTML = '<option value="" disabled selected>Select Subject</option>';
+
+    if (!session || !semester) {
+      return;
+    }
+
+    const filtered = allSubjects.filter(
+      (subject) => String(subject.session_id) === String(session) && String(subject.semester) === String(semester)
+    );
+
+    filtered.forEach((subject) => {
+      const option = document.createElement("option");
+      option.value = subject.id;
+      option.textContent = subject.name;
+      subjectSelect.appendChild(option);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", filterSubjects);
+</script>
+
+{% endblock %}

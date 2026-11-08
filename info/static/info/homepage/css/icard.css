@@ -1,0 +1,111 @@
+.teacher-id-card {
+  width: 16rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  border: 2px solid #004085; /* Navy accent */
+  overflow: hidden;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #212529;
+}
+
+.teacher-id-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 3px solid #004085;
+}
+
+.teacher-id-card-header {
+  background-color: #004085;
+  color: white;
+  padding: 10px 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.teacher-id-card-body {
+  padding: 15px 18px;
+}
+
+.teacher-id-card-section {
+  margin-bottom: 12px;
+}
+
+.teacher-id-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #004085;
+  margin-bottom: 3px;
+  letter-spacing: 0.05em;
+}
+
+.teacher-id-value {
+  font-size: 0.95rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  font-weight: 700;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-active {
+  background-color: #28a745; /* green */
+  color: white;
+}
+
+.status-pending {
+  background-color: #ffc107; /* amber */
+  color: #212529;
+}
+
+.status-other {
+  background-color: #6c757d; /* gray */
+  color: white;
+}
+
+.scrollable-pane {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 24px;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  border-radius: 16px;
+  border: 2px solid #90caf9; /* soft blue border */
+  box-shadow: 0 12px 28px rgba(33, 150, 243, 0.15);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  justify-content: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: #90caf9 #e3f2fd;
+}
+
+/* Custom scrollbar for WebKit browsers */
+.scrollable-pane::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-pane::-webkit-scrollbar-track {
+  background: #e3f2fd;
+  border-radius: 16px;
+}
+
+.scrollable-pane::-webkit-scrollbar-thumb {
+  background-color: #90caf9;
+  border-radius: 16px;
+  border: 2px solid #e3f2fd;
+}
+
+/* Optional subtle hover effect on each teacher card container */
+.scrollable-pane > div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(33, 150, 243, 0.2);
+  transition: 0.3s ease;
+  z-index: 5;
+}

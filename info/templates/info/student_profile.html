@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Student Profile</title>
+
+    {% load static %}
+    <link
+      href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    {% include 'info/includes/theme_head.html' %}
+
+    <style>
+      body {
+        background-color: #f5f7fa;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .form-container {
+        max-width: 720px;
+        margin: 100px auto 50px;
+        background: #fff;
+        padding: 40px 35px;
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(99, 99, 99, 0.1);
+      }
+      h2 {
+        color: #007bff;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+      }
+      .form-label {
+        font-weight: 600;
+        color: #4a4a4a;
+      }
+      .btn-primary {
+        padding: 10px 40px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        border-radius: 30px;
+      }
+      .list-group-item {
+        font-size: 0.9rem;
+      }
+      .scrollable-container {
+        max-height: 280px;
+        overflow-y: auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    {% if messages %}
+    <div>
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a href="{% url 'index' %}" class="nav-link">Home</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container form-container">
+      <h2>Student Profile</h2>
+
+      <form
+        method="post"
+        action="{% url 'student_profile_update' %}"
+        novalidate
+      >
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_name" class="form-label">Full Name</label>
+          <input
+            type="text"
+            name="name"
+            id="id_name"
+            value="{{ form.name.value|default_if_none:'' }}"
+            class="form-control"
+            placeholder="Enter full name"
+          />
+          {% for error in form.name.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_email" class="form-label">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="id_email"
+            value="{{ form.email.value|default_if_none:'' }}"
+            class="form-control"
+            placeholder="Enter email"
+          />
+          {% for error in form.email.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_phone" class="form-label">Phone</label>
+          <input
+            type="text"
+            name="phone"
+            id="id_phone"
+            value="{{ form.phone.value|default_if_none:'' }}"
+            class="form-control"
+            placeholder="Enter phone"
+          />
+          {% for error in form.phone.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_sex" class="form-label">Sex</label>
+          <select name="sex" id="id_sex" class="form-control">
+            <option value="">Select</option>
+            <option
+              value="Male"
+              {%
+              if
+              form.sex.value=""
+              ="Male"
+              %}selected{%
+              endif
+              %}
+            >
+              Male
+            </option>
+            <option
+              value="Female"
+              {%
+              if
+              form.sex.value=""
+              ="Female"
+              %}selected{%
+              endif
+              %}
+            >
+              Female
+            </option>
+            <option
+              value="Other"
+              {%
+              if
+              form.sex.value=""
+              ="Other"
+              %}selected{%
+              endif
+              %}
+            >
+              Other
+            </option>
+          </select>
+          {% for error in form.sex.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_dob" class="form-label">Date of Birth</label>
+          <input
+            type="date"
+            name="dob"
+            id="id_dob"
+            value="{{ form.dob.value|default_if_none:'' }}"
+            class="form-control"
+          />
+          {% for error in form.dob.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+          Update Profile
+        </button>
+      </form>
+
+      <hr />
+
+      <h4>Login Activity</h4>
+      <div class="scrollable-container">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>Last Login:</strong> {{ request.user.last_login }}
+          </li>
+        </ul>
+      </div>
+
+      <hr />
+
+      <a href="{% url 'change_password' %}" class="btn btn-warning w-100"
+        >Change Password</a
+      >
+    </div>
+  </body>
+</html>

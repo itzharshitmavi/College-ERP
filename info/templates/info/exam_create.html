@@ -1,0 +1,193 @@
+{% extends 'info/base.html' %} {% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">Schedule New Exam</h3>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group mb-3">
+              <label for="exam_type"
+                >Exam Type <span class="text-danger">*</span></label
+              >
+              <select
+                id="exam_type"
+                name="exam_type"
+                class="form-control"
+                required
+              >
+                <option value="">Select exam type</option>
+                {% for exam_t, exam_label in exam_types %}
+                <option value="{{ exam_t }}">{{ exam_label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="session"
+                    >Session <span class="text-danger">*</span></label
+                  >
+                  <select
+                    id="session"
+                    name="session"
+                    class="form-control"
+                    required
+                    onchange="filterSubjects()"
+                  >
+                    <option value="">Select session</option>
+                    {% for sess in sessions %}
+                    <option value="{{ sess.id }}">{{ sess.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="semester"
+                    >Semester <span class="text-danger">*</span></label
+                  >
+                  <select
+                    id="semester"
+                    name="semester"
+                    class="form-control"
+                    required
+                    onchange="filterSubjects()"
+                  >
+                    <option value="">Select semester</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="subject"
+                >Subject <span class="text-danger">*</span></label
+              >
+              <select id="subject" name="subject" class="form-control" required>
+                <option value="">Select session and semester first</option>
+              </select>
+              <small class="text-muted"
+                >Only subjects for selected session and semester are
+                shown.</small
+              >
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="date_conducted"
+                    >Exam Date <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="date"
+                    id="date_conducted"
+                    name="date_conducted"
+                    class="form-control"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="exam_time"
+                    >Exam Time <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="time"
+                    id="exam_time"
+                    name="exam_time"
+                    class="form-control"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="total_marks"
+                    >Total Marks <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="number"
+                    id="total_marks"
+                    name="total_marks"
+                    class="form-control"
+                    value="25"
+                    min="1"
+                    max="100"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">
+                Schedule Exam
+              </button>
+              <a href="{% url 'exam_list' %}" class="btn btn-secondary"
+                >Cancel</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const allSubjects = JSON.parse("{{ all_subjects_json|escapejs }}");
+
+  function filterSubjects() {
+    const session = document.getElementById("session").value;
+    const semester = document.getElementById("semester").value;
+    const subjectSelect = document.getElementById("subject");
+
+    subjectSelect.innerHTML = '<option value="">Select subject</option>';
+
+    if (!session || !semester) {
+      subjectSelect.innerHTML =
+        '<option value="">Select session and semester first</option>';
+      return;
+    }
+
+    const filtered = allSubjects.filter(
+      (subject) =>
+        String(subject.session_id) === String(session) &&
+        String(subject.semester) === String(semester),
+    );
+
+    if (!filtered.length) {
+      subjectSelect.innerHTML =
+        '<option value="">No subject found for selected session and semester</option>';
+      return;
+    }
+
+    filtered.forEach((subject) => {
+      const option = document.createElement("option");
+      option.value = subject.id;
+      option.textContent = subject.name;
+      subjectSelect.appendChild(option);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", filterSubjects);
+</script>
+{% endblock %}

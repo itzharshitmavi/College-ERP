@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Student Registration - College ERP</title>
+
+    {% load static %}
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .welcome-section {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .welcome-section h2 {
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #343a40;
+      }
+      .btn-custom {
+        width: 220px;
+        margin: 10px;
+        font-size: 1.1rem;
+        padding: 12px;
+        border-radius: 50px;
+      }
+    </style>
+  </head>
+  <body>
+   
+    <div class="welcome-section container">
+      <h2>Welcome to College ERP</h2>
+
+      <div class="d-flex flex-column flex-md-row justify-content-center">
+        <a
+          href="{% url 'register_student' %}"
+          class="btn btn-success btn-custom"
+        >
+          <i class="fas fa-user-graduate me-2"></i> Register as Student
+        </a>
+        <a
+          href="{% url 'register_teacher' %}"
+          class="btn btn-primary btn-custom"
+        >
+          <i class="fas fa-chalkboard-teacher me-2"></i> Register as Teacher
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-secondary btn-custom">
+          <i class="fas fa-sign-in-alt me-2"></i> Login
+        </a>
+      </div>
+    </div>
+
+    <script src="{% static 'info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

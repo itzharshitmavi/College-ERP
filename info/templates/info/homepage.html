@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>homepage</title>
+    {% load static %}
+
+    <!-- Bootstrap core CSS -->
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom styles for this template -->
+    <link
+      href="{% static '/info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    {% include 'info/includes/theme_head.html' %}
+    <style>
+      .student-home .jumbotron {
+        padding: 1.75rem 1.75rem;
+      }
+
+      .student-home .welcome-name {
+        font-size: 2.1rem;
+        font-weight: 600;
+      }
+
+      .student-home .card-title {
+        font-size: 1.2rem;
+      }
+
+      .student-home .hero-left {
+        display: flex;
+        align-items: center;
+      }
+
+      .student-home .hero-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: auto;
+      }
+
+      .student-home .hero-actions .btn {
+        min-width: 190px;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 767.98px) {
+        .student-home .jumbotron {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .student-home .hero-actions {
+          margin-left: 0;
+          width: 100%;
+        }
+
+        .student-home .hero-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="student-home" data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="{% url 'index' %}">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            {% if request.resolver_match.url_name != 'index' and request.resolver_match.url_name != 'home' and request.resolver_match.url_name != 'teacher_home' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Home</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+                <a
+              class="nav-link position-relative"
+              href="{% url 'notice' %}"
+            >
+              Notices {% if has_new_notices %}
+              <span
+                style="
+                  position: absolute;
+                  top: 8px;
+                  right: 2px;
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 50%;
+                  background: #dc3545;
+                  border: 1px solid #fff;
+                "
+              >
+              </span>
+              {% endif %}
+            </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'student_subjects' %}">Subjects</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'student_fees' %}">Pay Fees</a>
+            </li>
+           <li>
+            <a class="nav-link" href="{% url 'student_course_teachers' %}">Teachers</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_my_report_pdf' %}">My Report</a>
+          </li>
+         
+          <li>
+            <a class="nav-link" href="{% url 'student_leave_apply' %}">Apply Leave</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_document_vault' %}">Document Vault</a>
+          </li>
+           
+          
+            <li class="nav-item">
+              <a
+                class="nav-link"
+               href="{% url 'index' %}"       
+                data-toggle="modal"
+                data-target="#logoutModal"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+      <!-- Jumbotron Header -->
+      <header class="jumbotron my-4 d-flex align-items-center">
+        <div class="hero-left">
+          {% if request.user.student.photo %}
+          <img
+            src="{{ request.user.student.photo.url }}"
+            alt="Profile Photo"
+            class="rounded-circle"
+            style="width: 120px; height: 120px; object-fit: cover"
+          />
+          {% else %}
+          <img
+            src="{% static 'info/images/default.png' %}"
+            alt="Default Profile"
+            class="rounded-circle"
+            style="width: 120px; height: 120px; object-fit: cover"
+          />
+          {% endif %}
+          <h3 class="welcome-name text-capitalize mb-0 ml-3">
+            Welcome {{ request.user.student.name }}
+          </h3>
+        </div>
+        <div class="hero-actions">
+          <a href="{% url 'student_profile' %}" class="btn btn-dark">
+            Open Profile
+          </a>
+        </div>
+      </header>
+      <!-- Page Features -->
+      <div class="row text-center">
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'attendance' request.user.student.roll %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/attendance2.jpg' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Attendance</h4>
+              <p class="card-text">
+                View the attendance status for each of your courses. The
+                attendance of each course is also displayed as list of classes
+                that were conducted.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="{% url 'attendance' request.user.student.roll %}"
+              >
+                View Attendance</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% if request.user.student.roll %}{% url 'marks_list' request.user.student.roll %}{% else %}{% url 'marks_list' request.user.student.id %}{% endif %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/marks.jpg' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Marks</h4>
+              <p class="card-text">
+                View the marks obtained for each of your courses. These include
+                the marks of 3 internal assessment, 2 events and the Semester
+                End Exam
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="{% if request.user.student.roll %}{% url 'marks_list' request.user.student.roll %}{% else %}{% url 'marks_list' request.user.student.id %}{% endif %}"
+                >View Marks</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'student_exam_schedule' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/exams.png' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Scheduled Exams</h4>
+              <p class="card-text">
+                View all exams scheduled for you, including exam type, session,
+                date, time, status and marks update status.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a class="btn btn-primary" role="button" href="{% url 'student_exam_schedule' %}">
+                View Exams
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            {% if request.user.student.current_session_id %}
+            <a href="{% url 'timetable' request.user.student.current_session_id %}">
+            {% else %}
+            <a href="#">
+            {% endif %}
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/timetable.png' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">TimeTable</h4>
+              <p class="card-text">
+                View the timetable in a tabular form. The timetable displays all
+                the courses of the student and the time and day at which they
+                are conducted.
+              </p>
+            </div>
+            <div class="card-footer">
+              {% if request.user.student.current_session_id %}
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="{% url 'timetable' request.user.student.current_session_id %}"
+                >View TimeTable</a
+              >
+              {% else %}
+              <a class="btn btn-secondary disabled" role="button">No Session Assigned</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+           <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'student_notes' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/Notes.jpg' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Uploaded Notes</h4>
+              <p class="card-text">
+                Access notes shared by teachers for your assigned subjects,
+                with subject, session, and semester filters.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a class="btn btn-primary" role="button" href="{% url 'student_notes' %}">
+                View Notes
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'student_assignments' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/assignment.png' %}"
+                alt="Assignments"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Assignments</h4>
+              <p class="card-text">
+                Download assignments uploaded by your teachers and submit your
+                solution PDF from one place.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a class="btn btn-primary" role="button" href="{% url 'student_assignments' %}">
+                Open Assignments
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'student_counseling_support' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/couns.jpg' %}"
+                alt="Counseling Support"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Counseling Support</h4>
+              <p class="card-text">
+                Submit personal or academic counseling requests directly to your
+                assigned HOD and track status updates.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a class="btn btn-primary" role="button" href="{% url 'student_counseling_support' %}">
+                Open Counseling
+              </a>
+            </div>
+          </div>
+        </div>
+
+      <!-- /.row -->
+    </div>
+    <!-- /.container -->
+    <!-- Logout Modal-->
+  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Select "Logout" below to end your session.
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <form
+              action="{% url 'logout' %}"
+              method="post"
+              style="display: inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript -->
+
+    <a
+      href="{% url 'chatroom' %}"
+      title="Chatroom"
+      style="position: fixed; left: 20px; bottom: 20px; width: 58px; height: 58px; border-radius: 50%; background: #007bff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); z-index: 1100;"
+    >
+      Chat
+      {% if has_new_messages %}
+      <span
+        style="position: absolute; top: 5px; right: 5px; width: 10px; height: 10px; border-radius: 50%; background: #dc3545; border: 1px solid #fff;"
+      ></span>
+      {% endif %}
+    </a>
+
+    <script src="{% static '/info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

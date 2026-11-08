@@ -1,0 +1,174 @@
+{% extends 'info/base.html' %}
+{% load static %}
+
+{% block title %}Teacher Notes{% endblock %}
+
+{% block css %}
+<style>
+  body {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  #wrapper,
+  #content-wrapper {
+    background: var(--erp-page-bg, #f6f8fb);
+  }
+
+  #content-wrapper > .container-fluid {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .notes-page {
+    background: var(--erp-page-bg, #f6f8fb);
+    margin: 0;
+    padding: 1rem;
+    min-height: calc(100vh - 56px);
+  }
+
+  .notes-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .upload-card,
+  .feed-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  }
+
+  .note-item {
+    border: 1px solid var(--erp-border, #e5eaf1);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--erp-surface, #fff);
+  }
+
+  .meta {
+    font-size: 12px;
+    color: var(--erp-muted, #6b7280);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notes-page">
+  <div class="notes-shell">
+    <header class="mb-3">
+      <h3 class="mb-1">Notes Sharing</h3>
+      <p class="text-muted mb-0">Shared notes feed: visible to all teachers.</p>
+    </header>
+
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <div class="card upload-card h-100">
+          <div class="card-header"><b>Upload New Note</b></div>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="form-group">
+                <label>Subject</label>
+                <select name="subject_id" class="form-control" required>
+                  <option value="">Select subject</option>
+                  {% for subject in teacher_subjects %}
+                  <option value="{{ subject.id }}">{{ subject.name }} (Sem {{ subject.semester }} - {{ subject.session.name }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>Description (optional)</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label>File</label>
+                <input type="file" name="file" class="form-control" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Upload Note</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8 mb-4">
+        <div class="card feed-card h-100">
+          <div class="card-header"><b>All Shared Notes</b></div>
+          <div class="card-body">
+            <form method="get" class="mb-3">
+              <div class="form-row">
+                <div class="col-md-3 mb-2">
+                  <select name="subject" class="form-control">
+                    <option value="">All Subjects</option>
+                    {% for subject in filter_subjects %}
+                    <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:'s' %}selected{% endif %}>{{ subject.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <select name="session" class="form-control">
+                    <option value="">All Sessions</option>
+                    {% for s in sessions %}
+                    <option value="{{ s.session__id }}" {% if selected_session == s.session__id|stringformat:'s' %}selected{% endif %}>{{ s.session__name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                  <select name="semester" class="form-control">
+                    <option value="">Sem</option>
+                    {% for sem in semesters %}
+                    <option value="{{ sem }}" {% if selected_semester == sem|stringformat:'s' %}selected{% endif %}>{{ sem }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4 mb-2">
+                  <input type="text" name="q" class="form-control" placeholder="Search title" value="{{ search_query }}" />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-outline-primary btn-sm">Apply Filters</button>
+              <a href="{% url 'teacher_notes' %}" class="btn btn-outline-secondary btn-sm">Reset</a>
+            </form>
+
+            <div class="row">
+              {% for note in notes %}
+              <div class="col-12 mb-3">
+                <div class="note-item">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="mb-1"><a href="{{ note.file.url }}" target="_blank">{{ note.title }}</a></h6>
+                      <div class="meta mb-1">
+                        By {{ note.teacher.name }} | {{ note.subject.name }} | {{ note.session.name }} / Sem {{ note.semester }}
+                      </div>
+                      {% if note.description %}
+                      <div class="small text-muted">{{ note.description|truncatechars:140 }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="text-right">
+                      <a href="{{ note.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary mb-1">Open</a>
+                      {% if note.teacher_id == request.user.teacher.id %}
+                      <form method="post" action="{% url 'delete_teacher_note' note.id %}" onsubmit="return confirm('Delete this note?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                      </form>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="meta mt-2">Uploaded on {{ note.created_at|date:'Y-m-d h:i A' }}</div>
+                </div>
+              </div>
+              {% empty %}
+              <div class="col-12"><div class="alert alert-info mb-0">No notes found.</div></div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

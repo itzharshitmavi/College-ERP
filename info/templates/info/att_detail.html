@@ -1,0 +1,58 @@
+{% extends 'info/base.html' %} {% block content %}
+<div class="card mb-3">
+  <div class="card-header">
+    <i class="fas fa-table"></i>
+    <strong>{{ cr.name }} - Attendance Details</strong>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info">
+      <strong>Attendance: {{ summary.attendance_percentage }}%</strong> | Total
+      Classes: {{ summary.total_classes }} | Attended: {{
+      summary.classes_attended }}
+    </div>
+    <div class="table-responsive">
+      <table
+        class="table table-bordered"
+        id="dataTable"
+        width="100%"
+        cellspacing="0"
+      >
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Subject</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for att_record in att_records %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ att_record.attendance_record.date }}</td>
+            <td>{{ att_record.attendance_record.date|date:"l" }}</td>
+            <td>
+              {{ att_record.attendance_record.timetable_slot.subject.name }}
+            </td>
+            {% if att_record.status %}
+            <td class="p-3 mb-2 bg-success text-white">
+              Present <span class="glyphicon glyphicon-thumbs-up"></span>
+            </td>
+            {% else %}
+            <td class="p-3 mb-2 bg-danger text-white">
+              Absent <span class="glyphicon glyphicon-thumbs-down"></span>
+            </td>
+            {% endif %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center">No attendance records found</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

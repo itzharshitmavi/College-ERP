@@ -1,0 +1,101 @@
+{% extends 'info/base.html' %}
+
+{% block title %}Student Leave Requests{% endblock %}
+
+{% block css %}
+<style>
+  .surface-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+  .status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+  .status-pending { background: #fff8e5; color: #8a6d1d; }
+  .status-approved { background: #e8f7ed; color: #1f6f3c; }
+  .status-rejected { background: #fdecec; color: #8d2d2d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h3 class="mb-0">Student Leave Requests</h3>
+  <small class="text-muted">Review leave requests sent to you.</small>
+</div>
+
+<div class="card surface-card mb-3">
+  <div class="card-body">
+    <form method="get" class="form-inline">
+      <label for="status" class="mr-2">Status</label>
+      <select id="status" name="status" class="form-control mr-2">
+        {% for status in status_choices %}
+        <option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary">Apply</button>
+    </form>
+  </div>
+</div>
+
+<div class="card surface-card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Student</th>
+            <th>Department</th>
+            <th>Course</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Teacher Remark</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for leave in leave_requests %}
+          <tr>
+            <td>{{ leave.student.name }}</td>
+            <td>{{ leave.student.dept.name|default:'-' }}</td>
+            <td>{{ leave.student.course.name|default:'-' }}</td>
+            <td>{{ leave.from_date|date:"d M Y" }}</td>
+            <td>{{ leave.to_date|date:"d M Y" }}</td>
+            <td>{{ leave.reason|truncatechars:80 }}</td>
+            <td><span class="status-pill status-{{ leave.status|lower }}">{{ leave.status }}</span></td>
+            <td>{{ leave.teacher_remark|default:'-' }}</td>
+            <td>
+              {% if leave.status == 'Pending' %}
+              <form method="post" action="{% url 'review_student_leave' leave.id %}" class="mb-1">
+                {% csrf_token %}
+                <input type="hidden" name="decision" value="approve">
+                <input type="text" name="teacher_remark" class="form-control form-control-sm mb-1" placeholder="Remark (optional)">
+                <button type="submit" class="btn btn-success btn-sm btn-block">Approve</button>
+              </form>
+              <form method="post" action="{% url 'review_student_leave' leave.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="decision" value="reject">
+                <button type="submit" class="btn btn-danger btn-sm btn-block">Reject</button>
+              </form>
+              {% else %}
+              <span class="text-muted">Reviewed</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="9" class="text-center text-muted py-4">No leave requests found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

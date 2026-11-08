@@ -1,0 +1,30 @@
+{% extends 'info/base.html' %} {% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h4 class="mb-0">Delete Exam</h4>
+        </div>
+        <div class="card-body">
+          <p class="mb-3">Are you sure you want to delete this exam?</p>
+          <div class="alert alert-info">
+            <strong>Subject:</strong> {{ exam.subject.name }}<br />
+            <strong>Exam Type:</strong> {{ exam.exam_type }}<br />
+            <strong>Session:</strong> {{ exam.session.name }}<br />
+            <strong>Semester:</strong> {{ exam.semester }}
+          </div>
+          <p class="text-muted small mb-0">This action cannot be undone.</p>
+        </div>
+        <div class="card-footer">
+          <form method="post" style="display: inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+          <a href="{% url 'exam_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

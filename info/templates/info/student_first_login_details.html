@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Complete Family Details</title>
+
+    {% load static %}
+    <link
+      href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    {% include 'info/includes/theme_head.html' %}
+
+    <style>
+      body {
+        background: #f5f7fb;
+      }
+      .page-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .modal-header {
+        background: #1f2937;
+        color: #fff;
+      }
+      .required-star {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <div class="page-wrap">
+      {% if messages %}
+      <div class="position-fixed" style="top: 12px; right: 12px; z-index: 2000">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div
+        class="modal fade"
+        id="familyDetailsModal"
+        tabindex="-1"
+        role="dialog"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Complete Required Family Details</h5>
+            </div>
+            <div class="modal-body">
+              <p class="text-muted mb-3">
+                This is required by the college and is shown only once on first
+                login.
+              </p>
+              <form method="post" id="familyForm" novalidate>
+                {% csrf_token %}
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="id_father_name"
+                      >Father Name <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="father_name"
+                      id="id_father_name"
+                      class="form-control"
+                      value="{{ form.father_name.value|default_if_none:'' }}"
+                      required
+                    />
+                    {% for error in form.father_name.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="id_mother_name"
+                      >Mother Name <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="mother_name"
+                      id="id_mother_name"
+                      class="form-control"
+                      value="{{ form.mother_name.value|default_if_none:'' }}"
+                      required
+                    />
+                    {% for error in form.mother_name.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="id_guardian_name"
+                      >Guardian Name <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="guardian_name"
+                      id="id_guardian_name"
+                      class="form-control"
+                      value="{{ form.guardian_name.value|default_if_none:'' }}"
+                      required
+                    />
+                    {% for error in form.guardian_name.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="id_guardian_relation"
+                      >Guardian Relation
+                      <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="guardian_relation"
+                      id="id_guardian_relation"
+                      class="form-control"
+                      value="{{ form.guardian_relation.value|default_if_none:'' }}"
+                      placeholder="Father/Mother/Uncle/etc"
+                      required
+                    />
+                    {% for error in form.guardian_relation.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="id_guardian_phone"
+                      >Guardian Phone
+                      <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="tel"
+                      name="guardian_phone"
+                      id="id_guardian_phone"
+                      class="form-control"
+                      value="{{ form.guardian_phone.value|default_if_none:'' }}"
+                      pattern="[0-9]{10}"
+                      maxlength="10"
+                      required
+                    />
+                    {% for error in form.guardian_phone.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="id_family_pincode"
+                      >Pincode <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="family_pincode"
+                      id="id_family_pincode"
+                      class="form-control"
+                      value="{{ form.family_pincode.value|default_if_none:'' }}"
+                      pattern="[0-9]{6}"
+                      maxlength="6"
+                      required
+                    />
+                    {% for error in form.family_pincode.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="id_family_city"
+                      >City <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="family_city"
+                      id="id_family_city"
+                      class="form-control"
+                      value="{{ form.family_city.value|default_if_none:'' }}"
+                      required
+                    />
+                    {% for error in form.family_city.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="id_family_state"
+                      >State <span class="required-star">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="family_state"
+                      id="id_family_state"
+                      class="form-control"
+                      value="{{ form.family_state.value|default_if_none:'' }}"
+                      required
+                    />
+                    {% for error in form.family_state.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="id_family_address"
+                    >Family Address <span class="required-star">*</span></label
+                  >
+                  <textarea
+                    name="family_address"
+                    id="id_family_address"
+                    class="form-control"
+                    rows="3"
+                    required
+                  >
+{{ form.family_address.value|default_if_none:'' }}</textarea
+                  >
+                  {% for error in form.family_address.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                  {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  Save And Continue
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+      $(function () {
+        $("#familyDetailsModal").modal({
+          backdrop: "static",
+          keyboard: false,
+          show: true,
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{% extends 'info/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="h5 mb-2">Exam marks</h2>
+      <p class="text-muted mb-3">Marks are entered against a conducted exam. Choose an exam from the assessment list for this assigned course and academic session.</p>
+      <a class="btn btn-primary" href="{% url 'exam_marks_list' %}">Open exam marks</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

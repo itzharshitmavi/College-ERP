@@ -1,0 +1,213 @@
+{% extends 'info/base.html' %}
+
+{% block css %}
+<style>
+  .history-hero {
+    border-radius: 14px;
+    background: linear-gradient(120deg, #1a3a5a 0%, #206d8c 100%);
+    color: #fff;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 10px 24px rgba(16, 46, 72, 0.2);
+  }
+
+  .history-hero h4 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .history-hero p {
+    margin: 0.3rem 0 0;
+    opacity: 0.92;
+  }
+
+  .surface-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .history-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .history-table thead th {
+    background: #f8fbfd;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .history-table td,
+  .history-table th {
+    padding: 0.68rem 0.8rem;
+  }
+
+  .history-table tbody td {
+    border-top: 1px solid #eef2f7;
+    vertical-align: middle;
+  }
+
+  .history-table tbody tr:nth-child(even) {
+    background: #fcfdff;
+  }
+
+  .history-table tbody tr:hover {
+    background: #f3f8ff;
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .status-marked {
+    background: #e6fcf5;
+    color: #087f5b;
+  }
+
+  .status-not-marked {
+    background: #fff5f5;
+    color: #c92a2a;
+  }
+
+  .status-cancelled {
+    background: #fff9db;
+    color: #a66f00;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="history-hero mb-3">
+    <h4>{% if show_only_all_marked %}Attendance PDF History{% else %}Attendance History{% endif %}</h4>
+    <p>Track class attendance state and access reports quickly.</p>
+  </div>
+
+  <div class="card surface-card mb-3">
+    <div class="card-body">
+      {% if not show_only_all_marked %}
+      <h5 class="mb-3"><b>Class Attendance Records</b></h5>
+      <div class="table-responsive">
+        <table class="table history-table mb-0" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reason / Note</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in attendance_rows %}
+            <tr>
+              <td>{{ row.record.date }}</td>
+              <td>
+                {% if row.status == 'not_marked' %}
+                <span class="status-pill status-not-marked">Not Marked</span>
+                {% elif row.status == 'marked' %}
+                <span class="status-pill status-marked">Marked</span>
+                {% else %}
+                <span class="status-pill status-cancelled">Not Held</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if row.status == 'cancelled' %}
+                  {{ row.record.remarks|default:'-' }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if row.status == 'not_marked' %}
+                <a class="btn btn-primary btn-sm" href="{% url 't_attendance' row.record.id %}" role="button">Enter Attendance</a>
+                <a class="btn btn-warning btn-sm" href="{% url 'cancel_class' row.record.id %}">Cancel Class</a>
+                {% elif row.status == 'marked' %}
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'download_attendance_pdf' row.record.id %}" role="button">Download PDF</a>
+                {% else %}
+                <a class="btn btn-primary btn-sm" href="{% url 't_attendance' row.record.id %}" role="button">Enter Attendance</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center">No attendance records found for this class.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if can_view_all_pdfs %}
+      {% if not show_only_all_marked %}<hr class="my-4" />{% endif %}
+      <h5 class="mb-3"><b>All Attendance Records</b></h5>
+      <div class="table-responsive">
+        <table class="table history-table mb-0" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reason / Note</th>
+              <th>Subject</th>
+              <th>Teacher</th>
+              <th>Session</th>
+              <th>Semester</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in all_attendance_rows %}
+            <tr>
+              <td>{{ row.record.date }}</td>
+              <td>
+                {% if row.status == 'marked' %}
+                <span class="status-pill status-marked">Marked</span>
+                {% elif row.status == 'not_marked' %}
+                <span class="status-pill status-not-marked">Not Marked</span>
+                {% else %}
+                <span class="status-pill status-cancelled">Not Held</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if row.status == 'cancelled' %}
+                  {{ row.record.remarks|default:'-' }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>{{ row.record.timetable_slot.subject.name }}</td>
+              <td>{{ row.record.timetable_slot.teacher.name }}</td>
+              <td>{{ row.record.timetable_slot.session.name }}</td>
+              <td>{{ row.record.timetable_slot.semester }}</td>
+              <td>
+                {% if row.status == 'marked' %}
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'download_attendance_pdf' row.record.id %}" role="button">Download PDF</a>
+                {% else %}
+                -
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center">No attendance records found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

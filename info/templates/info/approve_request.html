@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Approve Requests</title>
+    {% load static %}
+    <link
+      href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link href="{% static 'info/homepage/css/icard.css' %}" rel="stylesheet" />
+    {% include 'info/includes/theme_head.html' %}
+
+    <style>
+
+      .admin-home .jumbotron {
+        padding: 1.75rem;
+      }
+
+      .admin-home .welcome-name {
+        font-size: 2rem;
+        font-weight: 600;
+      }
+
+      .summary-card {
+        border: 0;
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+        border-radius: 12px;
+      }
+
+      .summary-card .label {
+        font-size: 0.9rem;
+        color: #5f6b7a;
+      }
+
+      .summary-card .value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .quick-link-card {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+      }
+
+      .quick-link-card .btn {
+        width: 100%;
+      }
+
+      /* Smooth transitions for showing/hiding items */
+      .list-group-item {
+        transition: all 0.3s ease;
+      }
+
+      /* Ensure hidden items take no space */
+      .list-group-item[style*="display: none"] {
+        display: none !important;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        height: 0;
+        overflow: hidden;
+      }
+      .scrollable-form {
+        max-height: 500px; /* or your desired height */
+        overflow-y: auto;
+      }
+      .scrollable-container {
+        max-height: 480px; /* adjust height as needed */
+        overflow-y: auto;
+        background-color: white;
+      }
+      .card-body {
+        max-height: 480px; /* Set your desired max height */
+        overflow-y: auto; /* Enable vertical scrolling */
+      }
+    </style>
+  </head>
+  <body class="admin-home" data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+   
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+          
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                data-bs-toggle="modal"
+                data-bs-target="#infoModal"
+                >Inforamtion</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'notice_landing' %}"
+                >Upload Notices</a
+              >
+            </li>
+            
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#"
+                data-toggle="modal"
+                data-target="#logoutModal"
+              >
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container" style="margin-top: 90px">
+      <header class="jumbotron my-4 d-flex align-items-center gap-3">
+        <img
+          src="{% static 'info/images/default.png' %}"
+          alt="Admin"
+          class="rounded-circle"
+          style="width: 110px; height: 110px; object-fit: cover"
+        />
+        <div>
+          <h3 class="welcome-name text-capitalize mb-1">Welcome Admin</h3>
+          <p class="text-muted mb-0">{{ request.user }}</p>
+        </div>
+      </header>
+
+      <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-3">
+          <div class="card summary-card p-3">
+            <div class="label">Pending Teachers</div>
+            <p class="value text-primary">{{ pending_teachers|length }}</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+          <div class="card summary-card p-3">
+            <div class="label">Pending Students</div>
+            <p class="value text-success">{{ pending_students|length }}</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-12 mb-3">
+          <div class="card summary-card p-3">
+            <div class="label">Current Session</div>
+            <p class="value text-dark" style="font-size: 1.4rem">
+              {{ current_session.name|default:'Not Set' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card quick-link-card p-3">
+            <h5 class="mb-2">Course Management</h5>
+            <p class="text-muted mb-3">Add or update available courses.</p>
+            <a href="{% url 'course_add' %}" class="btn btn-primary"
+              >Open Courses</a
+            >
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card quick-link-card p-3">
+            <h5 class="mb-2">Rejected Requests</h5>
+            <p class="text-muted mb-3">Review and restore rejected users.</p>
+            <a
+              href="{% url 'rejected_request_landing' %}"
+              class="btn btn-warning"
+              >Open Rejected</a
+            >
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card quick-link-card p-3">
+            <h5 class="mb-2">Teacher Leaves</h5>
+            <p class="text-muted mb-3">Review leave requests submitted by teachers.</p>
+            <a href="{% url 'admin_teacher_leave_requests' %}" class="btn btn-info"
+              >Open Leaves</a
+            >
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card quick-link-card p-3">
+            <h5 class="mb-2">Admin Profile</h5>
+            <p class="text-muted mb-3">Manage account and password settings.</p>
+            <a href="{% url 'admin_profile' %}" class="btn btn-dark"
+              >Open Profile</a
+            >
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card quick-link-card p-3">
+            <h5 class="mb-2">Fee Management</h5>
+            <p class="text-muted mb-3">Set fee heads, generate semester invoices and reconcile payments.</p>
+            <a href="{% url 'admin_fee_management' %}" class="btn btn-success">Open Fees</a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card quick-link-card p-3">
+            <h5 class="mb-2">Student Document Vault</h5>
+            <p class="text-muted mb-3">Review uploaded student documents and verify or reject them.</p>
+            <a href="{% url 'admin_student_document_vault' %}" class="btn btn-success"
+              >Open Vault</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="card shadow rounded mb-4"
+        style="max-width: 1200px; margin: auto"
+      >
+        <div class="card-body">
+          <h4 class="mb-3">Academic Session & Semester Management</h4>
+          <p class="text-muted mb-3">
+            The active session is the college calendar. Each student's batch session is calculated from admission year and semester: semesters 1–2 use the admission-year session, semesters 3–4 use the next session, and so on. Promote Semester advances only students whose next semester belongs to the active session. Set Semester is an explicit admin correction for the filtered cohort and never moves students backwards.
+          </p>
+
+          <form method="post" action="{% url 'manage_academic_progression' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="mgmt_action" value="" />
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="session_id" class="form-label"
+                  >Active Session</label
+                >
+                <select
+                  id="session_id"
+                  name="session_id"
+                  data-current-session-id="{{ current_session_id }}"
+                  class="form-control mb-2"
+                  required
+                >
+                  {% for s in sessions %}
+                  <option value="{{ s.id }}">
+                    {{ s.name }}{% if s.is_current %} (Current){% endif %}
+                  </option>
+                  {% endfor %}
+                </select>
+                <label for="target_semester" class="form-label">Course</label>
+                <select
+                  id="filter_course_id"
+                  name="filter_course_id"
+                  class="form-control mb-2"
+                  required
+                >
+                  <option value="">All Courses</option>
+                  {% for c in courses %}
+                  <option value="{{ c.id }}">
+                    {{ c.name }} ({{ c.duration_years }} years)
+                  </option>
+                  {% endfor %}
+                </select>
+
+                <label for="target_semester" class="form-label">Semester</label>
+                <select
+                  id="target_semester"
+                  name="target_semester"
+                  class="form-control"
+                  required
+                >
+                  <option value="">Select course first</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Apply To (Optional Filters)</label>
+
+                <select
+                  id="filter_admission_year"
+                  name="filter_admission_year"
+                  class="form-control mb-2"
+                >
+                  <option value="">All Admission Years</option>
+                  {% for y in admission_years %}
+                  <option value="{{ y }}">{{ y }}</option>
+                  {% endfor %}
+                </select>
+
+                <select
+                  id="filter_current_session_id"
+                  name="filter_current_session_id"
+                  class="form-control"
+                >
+                  <option value="">All Current Sessions</option>
+                  {% for s in sessions %}
+                  <option value="{{ s.id }}">{{ s.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap" style="gap: 8px">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                onclick="
+                  document.getElementById('mgmt_action').value =
+                    'set_current_session'
+                "
+              >
+                Set Active Session
+              </button>
+              <button
+                type="submit"
+                class="btn btn-info text-white"
+                onclick="
+                  document.getElementById('mgmt_action').value =
+                    'apply_session_term'
+                "
+              >
+                Set Semester for Selected Cohort
+              </button>
+              <button
+                type="submit"
+                class="btn btn-success"
+                onclick="
+                  document.getElementById('mgmt_action').value =
+                    'promote_semester'
+                "
+              >
+                Promote Semester
+              </button>
+              <button
+                type="submit"
+                class="btn btn-warning"
+                onclick="
+                  document.getElementById('mgmt_action').value =
+                    'promote_session'
+                "
+              >
+                Repair Cohort Sessions
+              </button>
+              <button
+                type="submit"
+                class="btn btn-dark"
+                onclick="
+                  if (!confirm('Mark all selected final-semester students as graduated?')) return false;
+                  document.getElementById('mgmt_action').value = 'graduate_completed';
+                "
+              >
+                Mark Final-Semester Students Graduated
+              </button>
+            </div>
+
+            <small class="form-text text-muted mt-2 d-block">
+              Select course first to load valid semester/year/session options,
+              then click the required action button.
+            </small>
+          </form>
+        </div>
+      </div>
+
+      <div
+        class="card shadow rounded mb-4"
+        style="max-width: 1200px; margin: auto"
+      >
+        <div class="card-body">
+          <h4 class="mb-3">HOD Assignment (Course + Department + Year)</h4>
+          <p class="text-muted mb-3">
+            Assign HOD rights year-wise. Only assigned HODs can access Subject Management.
+          </p>
+
+          <form method="post" action="{% url 'manage_hod_assignments' %}" class="mb-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save" />
+            <div class="row">
+              <div class="col-md-3 mb-2">
+                <label class="form-label" for="hod_course_id">Course</label>
+                <select id="hod_course_id" name="course_id" class="form-control" required>
+                  <option value="">Select Course</option>
+                  {% for course in courses %}
+                  <option value="{{ course.id }}">{{ course.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3 mb-2">
+                <label class="form-label" for="hod_department_id">Department</label>
+                <select id="hod_department_id" name="department_id" class="form-control" required>
+                  <option value="">Select Department</option>
+                  {% for department in departments %}
+                  <option value="{{ department.id }}">{{ department.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2 mb-2">
+                <label class="form-label" for="hod_year">Year</label>
+                <select id="hod_year" name="year" class="form-control" required>
+                  <option value="">Select Year</option>
+                  {% for year_value, year_label in hod_year_choices %}
+                  <option value="{{ year_value }}">{{ year_label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label" for="hod_teacher_id">Teacher</label>
+                <select id="hod_teacher_id" name="teacher_id" class="form-control" required>
+                  <option value="">Select Teacher</option>
+                  {% for teacher in approved_teachers %}
+                  <option value="{{ teacher.id }}">
+                    {{ teacher.name }}
+                    {% if teacher.course %} | {{ teacher.course.name }}{% endif %}
+                    {% if teacher.dept %} | {{ teacher.dept.name }}{% endif %}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Assign / Update HOD</button>
+          </form>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-0">
+              <thead class="thead-light">
+                <tr>
+                  <th>Teacher</th>
+                  <th>Course</th>
+                  <th>Department</th>
+                  <th>Year</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for assignment in hod_assignments %}
+                <tr>
+                  <td>{{ assignment.teacher.name }}</td>
+                  <td>{{ assignment.course.name }}</td>
+                  <td>{{ assignment.department.name }}</td>
+                  <td>Year {{ assignment.year }}</td>
+                  <td>
+                    {% if assignment.is_active %}
+                    <span class="badge badge-success">Active</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td class="d-flex" style="gap: 6px;">
+                    {% if assignment.is_active %}
+                    <form method="post" action="{% url 'manage_hod_assignments' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="deactivate" />
+                      <input type="hidden" name="assignment_id" value="{{ assignment.id }}" />
+                      <button type="submit" class="btn btn-sm btn-warning">Deactivate</button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'manage_hod_assignments' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="activate" />
+                      <input type="hidden" name="assignment_id" value="{{ assignment.id }}" />
+                      <button type="submit" class="btn btn-sm btn-success">Activate</button>
+                    </form>
+                    {% endif %}
+                    <form method="post" action="{% url 'manage_hod_assignments' %}" onsubmit="return confirm('Delete this HOD assignment?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete" />
+                      <input type="hidden" name="assignment_id" value="{{ assignment.id }}" />
+                      <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted">No HOD assignments yet.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="container my-5">
+        <div
+          class="card shadow-lg rounded"
+          style="max-width: 1200px; margin: auto"
+        >
+          <div class="card-body p-4">
+            <div class="card-title">
+              <p class="lead">
+                <strong>
+                  <strong>
+                    Approve pending teacher and student registration requests
+                    below:</strong
+                  >
+                </strong>
+              </p>
+
+              <div class="row">
+                <!-- Teacher Requests -->
+                <div class="col-md-6 mb-5">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h3 class="mb-0">Pending Teacher Requests</h3>
+                    {% if pending_teachers %}
+                    <form
+                      method="post"
+                      action="{% url 'approve_all_teachers' %}"
+                      onsubmit="return confirm('Approve all pending teacher requests?');"
+                    >
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm">
+                        Approve All Teachers
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+
+                  <!-- Scrollable container -->
+                  <div
+                    class="card-body scrollable-container border rounded p-3"
+                  >
+                    <div class="row mb-4">
+                      <div class="col-12">
+                        <input
+                          type="search"
+                          id="teachersearchBox"
+                          class="form-control teacher-search"
+                          placeholder="Search requests by name, email, or department..."
+                        />
+                      </div>
+                    </div>
+
+                    {% if pending_teachers %}
+                    <ul class="list-group teacher-list">
+                      {% for teacher in pending_teachers %}
+                      <li
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                      >
+                        <div class="d-flex align-items-center gap-3">
+                          {% if teacher.photo %}
+                          <img
+                            src="{{ teacher.photo.url }}"
+                            alt="Photo"
+                            class="rounded-circle"
+                            style="width: 50px; height: 50px; object-fit: cover"
+                          />
+                          {% else %}
+                          <img
+                            src="{% static 'info/images/default.png' %}"
+                            alt="No Photo"
+                            class="rounded-circle"
+                            style="width: 50px; height: 50px; object-fit: cover"
+                          />
+                          {% endif %}
+                          <div>
+                            <strong>{{ teacher.name }}</strong> | {{
+                            teacher.email }} | {{ teacher.dept.name }} | {{
+                            teacher.phone }}
+                          </div>
+                        </div>
+
+                        <form
+                          method="post"
+                          action="{% url 'approve_teacher' teacher.id %}"
+                        >
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-success">
+                            Approve
+                          </button>
+                        </form>
+
+                        <form
+                          method="post"
+                          action="{% url 'reject_teacher' teacher.id %}"
+                        >
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-danger">
+                            Reject
+                          </button>
+                        </form>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="alert alert-info mt-3">
+                      No pending teacher requests.
+                    </div>
+                    {% endif %}
+                  </div>
+                  <!-- .scrollable-container -->
+                </div>
+
+                <!-- Student Requests -->
+                <div class="col-md-6 mb-5">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h3 class="mb-0">Pending Student Requests</h3>
+                    {% if pending_students %}
+                    <form
+                      method="post"
+                      action="{% url 'approve_all_students' %}"
+                      onsubmit="return confirm('Approve all pending student requests?');"
+                    >
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm">
+                        Approve All Students
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+
+                  <!-- Scrollable container -->
+                  <div
+                    class="card-body scrollable-container border rounded p-3"
+                  >
+                    <div class="row mb-4">
+                      <div class="col-12">
+                        <input
+                          type="search"
+                          id="studentsearchBox"
+                          class="form-control student-search"
+                          placeholder="Search requests by name, email, or department..."
+                        />
+                      </div>
+                    </div>
+
+                    {% if pending_students %}
+                    <ul class="list-group student-list">
+                      {% for student in pending_students %}
+                      <li
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                      >
+                        <div class="d-flex align-items-center gap-3">
+                          {% if student.photo %}
+                          <img
+                            src="{{ student.photo.url }}"
+                            alt="Photo"
+                            class="rounded-circle"
+                            style="width: 50px; height: 50px; object-fit: cover"
+                          />
+                          {% else %}
+                          <img
+                            src="{% static 'info/images/default.png' %}"
+                            alt="No Photo"
+                            class="rounded-circle"
+                            style="width: 50px; height: 50px; object-fit: cover"
+                          />
+                          {% endif %}
+                          <div>
+                            <strong>{{ student.name }}</strong> &lt;{{
+                            student.email }}&gt; | Dept: {{ student.dept.name }}
+                          </div>
+                        </div>
+
+                        <form
+                          method="post"
+                          action="{% url 'approve_student' student.id %}"
+                        >
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-success">
+                            Approve
+                          </button>
+                        </form>
+
+                        <form
+                          method="post"
+                          action="{% url 'reject_student' student.id %}"
+                        >
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-danger">
+                            Reject
+                          </button>
+                        </form>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="alert alert-info mt-3">
+                      No pending student requests.
+                    </div>
+                    {% endif %}
+                  </div>
+                  <!-- .scrollable-container -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Select "Logout" below to end your session.
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <form
+              action="{% url 'logout' %}"
+              method="post"
+              style="display: inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="infoModal"
+      tabindex="-1"
+      aria-labelledby="infoModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="infoModalLabel">
+              Get Teacher or Student Info
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              ❌
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Single search input -->
+            <div class="mb-3">
+              <input
+                id="searchInput"
+                type="text"
+                class="form-control"
+                placeholder="Enter teacher email or student roll number"
+              />
+            </div>
+
+            <button id="searchBtn" class="btn btn-primary mb-3">Search</button>
+
+            <hr />
+
+            <!-- Scrollable display pane -->
+            <div
+              id="infoDisplayPane"
+              class="scrollable-pane"
+              style="max-height: 400px; overflow-y: auto"
+            >
+              <!-- Search results will be appended here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap & jQuery Scripts -->
+    <a
+      href="{% url 'chatroom' %}"
+      title="Chatroom"
+      style="
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: #007bff;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 1100;
+      "
+    >
+      Chat {% if has_new_messages %}
+      <span
+        style="
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #dc3545;
+          border: 1px solid #fff;
+        "
+      ></span>
+      {% endif %}
+    </a>
+
+    <script src="{% static 'info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script id="courseFilterMeta" type="application/json">
+      {{ course_filter_meta_json|safe }}
+    </script>
+
+    <script>
+      (function () {
+        var sessionSelect = document.getElementById("session_id");
+        if (sessionSelect) {
+          var currentId = sessionSelect.getAttribute("data-current-session-id");
+          if (currentId) {
+            sessionSelect.value = String(currentId);
+          }
+        }
+
+        function setupFilter(inputElem, listSelector) {
+          if (!inputElem) return;
+
+          function doFilter() {
+            let filter = (inputElem.value || "").toLowerCase().trim();
+            let container = document.querySelector(listSelector);
+            if (!container) return;
+
+            let items = container.querySelectorAll(".list-group-item");
+            let anyVisible = false;
+
+            items.forEach(function (li) {
+              let text = (li.innerText || li.textContent || "")
+                .toLowerCase()
+                .trim();
+              let visible = filter === "" ? true : text.includes(filter);
+              li.style.display = visible ? "" : "none";
+              if (visible) anyVisible = true;
+            });
+
+            // Show "No matching results" message if needed
+            let noMsgId =
+              listSelector.replace(/[^a-z0-9]+/gi, "") + "-noresults";
+            let noMsg = document.getElementById(noMsgId);
+            if (!noMsg) {
+              noMsg = document.createElement("div");
+              noMsg.id = noMsgId;
+              noMsg.className = "no-results small text-muted mt-2";
+              if (container.parentNode)
+                container.parentNode.insertBefore(noMsg, container.nextSibling);
+            }
+            noMsg.textContent = "No matching requests found.";
+            noMsg.style.display = anyVisible ? "none" : "";
+          }
+
+          // Run filter on typing
+          inputElem.addEventListener("input", doFilter);
+
+          // Prevent form submit on Enter
+          inputElem.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") e.preventDefault();
+          });
+        }
+
+        let teacherInput =
+          document.getElementById("teachersearchBox") ||
+          document.querySelector("input.teacher-search");
+
+        let studentInput =
+          document.getElementById("studentsearchBox") ||
+          document.querySelector("input.student-search");
+
+        setupFilter(teacherInput, ".teacher-list");
+        setupFilter(studentInput, ".student-list");
+      })();
+      // Handle browser back/forward
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const meta = JSON.parse(
+          document.getElementById("courseFilterMeta").textContent || "{}",
+        );
+        const courseSelect = document.getElementById("filter_course_id");
+        const yearSelect = document.getElementById("filter_admission_year");
+        const sessionFilterSelect = document.getElementById(
+          "filter_current_session_id",
+        );
+        const semesterSelect = document.getElementById("target_semester");
+        const applySemesterBtn = document.querySelector(
+          "button[onclick*='apply_session_term']",
+        );
+
+        const allYearOptions = Array.from(yearSelect.options).map((opt) => ({
+          value: opt.value,
+          label: opt.textContent,
+        }));
+        const allSessionOptions = Array.from(sessionFilterSelect.options).map(
+          (opt) => ({
+            value: opt.value,
+            label: opt.textContent,
+          }),
+        );
+
+        function fillSelect(selectElem, items, placeholder) {
+          selectElem.innerHTML = "";
+          const ph = document.createElement("option");
+          ph.value = "";
+          ph.textContent = placeholder;
+          selectElem.appendChild(ph);
+          items.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = String(item.value);
+            opt.textContent = item.label;
+            selectElem.appendChild(opt);
+          });
+        }
+
+        function fillSemesters(maxSemesters) {
+          semesterSelect.innerHTML = "";
+          if (!maxSemesters) {
+            const ph = document.createElement("option");
+            ph.value = "";
+            ph.textContent = "Select course first";
+            semesterSelect.appendChild(ph);
+            return;
+          }
+          for (let s = 1; s <= maxSemesters; s += 1) {
+            const opt = document.createElement("option");
+            opt.value = String(s);
+            opt.textContent = "Semester " + s;
+            semesterSelect.appendChild(opt);
+          }
+        }
+
+        function updateByCourse() {
+          const selectedCourseId = courseSelect.value;
+          if (!selectedCourseId || !meta[selectedCourseId]) {
+            fillSelect(
+              yearSelect,
+              allYearOptions.filter((x) => x.value !== ""),
+              "All Admission Years",
+            );
+            fillSelect(
+              sessionFilterSelect,
+              allSessionOptions.filter((x) => x.value !== ""),
+              "All Current Sessions",
+            );
+            fillSemesters(0);
+            return;
+          }
+
+          const courseMeta = meta[selectedCourseId];
+          const yearItems = (courseMeta.admission_years || []).map((y) => ({
+            value: String(y),
+            label: String(y),
+          }));
+          const sessionItems = (courseMeta.sessions || []).map((s) => ({
+            value: String(s.id),
+            label: s.name,
+          }));
+          fillSelect(yearSelect, yearItems, "All Admission Years");
+          fillSelect(sessionFilterSelect, sessionItems, "All Current Sessions");
+          fillSemesters(courseMeta.max_semesters || 0);
+        }
+
+        courseSelect.addEventListener("change", updateByCourse);
+        updateByCourse();
+
+        if (applySemesterBtn) {
+          applySemesterBtn.addEventListener("click", function (e) {
+            if (!courseSelect.value) {
+              e.preventDefault();
+              alert("Please select a course first.");
+              return;
+            }
+            if (!semesterSelect.value) {
+              e.preventDefault();
+              alert("Please select a semester.");
+            }
+          });
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.querySelector('input[type="file"]');
+        const label = fileInput.nextElementSibling || fileInput;
+
+        fileInput.addEventListener("change", function () {
+          if (fileInput.files.length > 0) {
+            label.textContent = fileInput.files[0].name;
+          } else {
+            label.textContent = "Choose file";
+          }
+        });
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const deleteForms = document.querySelectorAll("form.delete-form");
+        deleteForms.forEach(function (form) {
+          form.addEventListener("submit", function (e) {
+            if (!confirm("Confirm delete?")) {
+              e.preventDefault();
+            }
+          });
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const searchBtn = document.getElementById("searchBtn");
+        const searchInput = document.getElementById("searchInput");
+        const infoPane = document.getElementById("infoDisplayPane");
+
+        searchBtn.addEventListener("click", () => {
+          const query = searchInput.value.trim();
+          if (!query) {
+            alert("Please enter teacher email or student roll number");
+            return;
+          }
+
+          // Simple regex heuristic to detect if input looks like email (contains @)
+          if (query.includes("@")) {
+            // Search teacher by email
+            fetch(`/api/search_teacher/?email=${encodeURIComponent(query)}`)
+              .then((res) => res.json())
+              .then((data) => renderTeacherOrShowError(data))
+              .catch(() => {
+                infoPane.innerHTML =
+                  '<p class="text-danger">Error loading teacher data.</p>';
+              });
+          } else {
+            // Otherwise search student by roll number
+            fetch(`/api/search_student/?roll=${encodeURIComponent(query)}`)
+              .then((res) => res.json())
+              .then((data) => renderStudentOrShowError(data))
+              .catch(() => {
+                infoPane.innerHTML =
+                  '<p class="text-danger">Error loading student data.</p>';
+              });
+          }
+        });
+
+        function renderTeacherOrShowError(data) {
+          if (!data || data.error) {
+            infoPane.innerHTML = `<p class="text-warning">${
+              data.error || "Teacher not found."
+            }</p>`;
+            return;
+          }
+          const subjectsHTML =
+            data.subjects && data.subjects.length > 0
+              ? `<div class="teacher-id-card-section">
+        <div class="teacher-id-label">Assigned Subjects</div>
+        <div class="teacher-id-value">${data.subjects.join(", ")}</div>
+      </div>`
+              : "";
+          const hodAssignmentsHTML =
+            data.hod_assignments && data.hod_assignments.length > 0
+              ? `<div class="teacher-id-card-section">
+        <div class="teacher-id-label">HOD Role</div>
+        <div class="teacher-id-value">${data.hod_assignments
+          .map(
+            (tag) =>
+              `<span class="badge badge-primary mr-1 mb-1">${tag}</span>`
+          )
+          .join(" ")}</div>
+      </div>`
+              : "";
+          const snapshotHTML = data.snapshot
+            ? `<div class="teacher-id-card-section mt-2">
+        <div class="teacher-id-label">Academic Snapshot</div>
+        <div class="teacher-id-value">
+          Subjects: ${data.snapshot.assigned_subjects || 0}<br/>
+          Classes This Month: ${data.snapshot.classes_this_month || 0}<br/>
+          Classes Marked: ${data.snapshot.classes_marked_total || 0}<br/>
+          Exams Created/Conducted: ${data.snapshot.exams_created || 0}/${data.snapshot.exams_conducted || 0}<br/>
+          Marks Completion: ${data.snapshot.marks_completion_text || "N/A"}
+        </div>
+      </div>`
+            : "";
+          infoPane.innerHTML = `
+  <div class="teacher-id-card">
+    <img src="${data.photo_url || "/static/info/default_photo.png"}" alt="${
+      data.name
+    }" />
+    <div class="teacher-id-card-header">${data.name}</div>
+    <div class="teacher-id-card-body">
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Email</div><div class="teacher-id-value">${
+        data.email
+      }</div></div>
+      ${
+        data.phone
+          ? `<div class="teacher-id-card-section"><div class="teacher-id-label">Phone</div><div class="teacher-id-value">${data.phone}</div></div>`
+          : ""
+      }
+      ${
+        data.department
+          ? `<div class="teacher-id-card-section"><div class="teacher-id-label">Department</div><div class="teacher-id-value">${data.department}</div></div>`
+          : ""
+      }
+      ${
+        data.course
+          ? `<div class="teacher-id-card-section"><div class="teacher-id-label">Course</div><div class="teacher-id-value">${data.course}</div></div>`
+          : ""
+      }
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Sex</div><div class="teacher-id-value">${
+        data.sex
+      }</div></div>
+      ${
+        data.dob
+          ? `<div class="teacher-id-card-section"><div class="teacher-id-label">Date of Birth</div><div class="teacher-id-value">${data.dob}</div></div>`
+          : ""
+      }
+      ${hodAssignmentsHTML}
+      ${subjectsHTML}
+      ${snapshotHTML}
+      <div><span class="status-badge ${data.status_class}">${
+        data.status
+      }</span></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Login</div><div class="teacher-id-value">${
+        data.login_active ? "Active" : "Disabled"
+      }</div></div>
+      ${
+        data.report_pdf_url
+          ? `<div class="mt-2"><a href="${data.report_pdf_url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Download PDF</a></div>`
+          : ""
+      }
+      ${
+        data.deactivate_url
+          ? `<form method="post" action="${data.deactivate_url}" class="mt-2" onsubmit="return confirm('Disable login for this teacher?');">
+               <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+               <button type="submit" class="btn btn-sm btn-outline-danger">Disable Login</button>
+             </form>`
+          : ""
+      }
+      ${
+        data.reactivate_url
+          ? `<form method="post" action="${data.reactivate_url}" class="mt-2" onsubmit="return confirm('Enable login for this teacher?');">
+               <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+               <button type="submit" class="btn btn-sm btn-outline-success">Enable Login</button>
+             </form>`
+          : ""
+      }
+    </div>
+  </div>`;
+        }
+
+        function renderStudentOrShowError(data) {
+          if (!data || data.error) {
+            infoPane.innerHTML = `<p class="text-warning">${
+              data.error || "Student not found."
+            }</p>`;
+            return;
+          }
+          const subjectsHTML =
+            data.subjects && data.subjects.length > 0
+              ? `<div class="teacher-id-card-section">
+        <div class="teacher-id-label">Assigned Subjects</div>
+        <div class="teacher-id-value">${data.subjects.join(", ")}</div>
+      </div>`
+              : "";
+
+          infoPane.innerHTML = `
+  <div class="teacher-id-card">
+    <!-- Use a placeholder photo or student photo if available -->
+    <img src="${
+      data.photo_url || "/static/info/default_student_photo.png"
+    }" alt="${data.name}" />
+    <div class="teacher-id-card-header">${data.name}</div>
+    <div class="teacher-id-card-body">
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Roll</div><div class="teacher-id-value">${
+        data.roll
+      }</div></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Email</div><div class="teacher-id-value">${
+        data.email
+      }</div></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Department</div><div class="teacher-id-value">${
+        data.department
+      }</div></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Course</div><div class="teacher-id-value">${
+        data.course
+      }</div></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Sex</div><div class="teacher-id-value">${
+        data.sex
+      }</div></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Date of Birth</div><div class="teacher-id-value">${
+        data.dob
+      }</div></div>
+      ${subjectsHTML}
+      <div><span class="status-badge status-active">${data.status}</span></div>
+      <div class="teacher-id-card-section"><div class="teacher-id-label">Login</div><div class="teacher-id-value">${
+        data.login_active ? "Active" : "Disabled"
+      }</div></div>
+      ${
+        data.report_pdf_url
+          ? `<div class="mt-2"><a href="${data.report_pdf_url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Download PDF</a></div>`
+          : ""
+      }
+      ${
+        data.deactivate_url
+          ? `<form method="post" action="${data.deactivate_url}" class="mt-2" onsubmit="return confirm('Disable login for this student?');">
+               <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+               <button type="submit" class="btn btn-sm btn-outline-danger">Disable Login</button>
+             </form>`
+          : ""
+      }
+      ${
+        data.reactivate_url
+          ? `<form method="post" action="${data.reactivate_url}" class="mt-2" onsubmit="return confirm('Enable login for this student?');">
+               <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+               <button type="submit" class="btn btn-sm btn-outline-success">Enable Login</button>
+             </form>`
+          : ""
+      }
+    </div>
+  </div>`;
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chatroom</title>
+    {% load static %}
+    <link
+      href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    {% include 'info/includes/theme_head.html' %}
+    <style>
+      :root {
+        --wa-green: #128c7e;
+        --wa-light: #d9fdd3;
+        --wa-surface: #efeae2;
+        --wa-white: #ffffff;
+        --wa-text: #111b21;
+      }
+
+      body {
+        margin: 0;
+        background: #d4d7db;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--wa-text);
+      }
+
+      .chat-shell {
+        max-width: 980px;
+        margin: 14px auto;
+        height: calc(100vh - 28px);
+        background: var(--wa-white);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        background: var(--wa-green);
+        color: #fff;
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chat-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .close-chat {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        text-decoration: none;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: 6px;
+        background: var(--wa-surface);
+        background-image: radial-gradient(
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px
+        );
+        background-size: 20px 20px;
+      }
+
+      .msg-row {
+        display: flex;
+        margin-bottom: 3px;
+      }
+
+      .msg-row.own {
+        justify-content: flex-end;
+      }
+
+      .msg-bubble {
+        max-width: 68%;
+        border-radius: 6px;
+        padding: 2px 5px;
+        padding-right: 14px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+        background: #fff;
+        position: relative;
+      }
+
+      .msg-row.own .msg-bubble {
+        background: var(--wa-light);
+      }
+
+      .msg-user {
+        font-size: 9px;
+        font-weight: 600;
+        color: #667781;
+        margin-bottom: 1px;
+        margin-right: 12px;
+      }
+
+      .msg-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.15;
+        font-size: 12px;
+      }
+
+      .msg-text.deleted {
+        font-style: italic;
+        color: #667781;
+      }
+
+      .msg-time {
+        margin-top: 1px;
+        font-size: 8px;
+        color: #667781;
+        text-align: right;
+      }
+
+      .msg-actions {
+        position: absolute;
+        top: 1px;
+        right: 2px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+      }
+
+      .msg-row.own .msg-bubble:hover .msg-actions,
+      .msg-row.own .msg-bubble:focus-within .msg-actions {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .delete-msg-btn {
+        border: 0;
+        background: rgba(17, 27, 33, 0.08);
+        color: #7d212b;
+        font-size: 11px;
+        line-height: 1;
+        padding: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .msg-photo {
+        max-width: 210px;
+        max-height: 230px;
+        border-radius: 5px;
+        margin-top: 2px;
+        display: block;
+      }
+
+      .composer {
+        background: #f0f2f5;
+        border-top: 1px solid #dde1e7;
+        padding: 4px;
+      }
+
+      .composer .message-input {
+        min-height: 28px;
+        max-height: 80px;
+        resize: vertical;
+        padding: 3px 5px;
+        font-size: 12px;
+      }
+
+      .composer .form-control,
+      .composer .btn {
+        font-size: 12px;
+        min-height: 32px;
+      }
+
+      .empty-chat {
+        color: #667781;
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .chat-shell {
+          margin: 0;
+          max-width: none;
+          height: 100vh;
+          border-radius: 0;
+        }
+
+        .msg-bubble {
+          max-width: 78%;
+        }
+
+        .msg-actions {
+          opacity: 0.55;
+          pointer-events: auto;
+        }
+
+        .chat-header {
+          padding: 8px 10px;
+        }
+
+        .close-chat {
+          width: 44px;
+          height: 44px;
+          font-size: 28px;
+          background: rgba(255, 255, 255, 0.24);
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <div class="chat-shell">
+      <div class="chat-header">
+        <div class="chat-title">Chatroom</div>
+        <a href="{{ close_url }}" title="Close chat" class="close-chat">X</a>
+      </div>
+
+      <div class="chat-box" id="chatBox">
+        {% for m in chat_messages %}
+        <div
+          class="msg-row {% if m.user_id == request.user.id %}own{% endif %}"
+        >
+          <div class="msg-bubble">
+            <div class="msg-user">{{ m.user.username }}</div>
+            {% if m.message %}
+            <div class="msg-text {% if m.is_deleted %}deleted{% endif %}">
+              {{ m.message }}
+            </div>
+            {% endif %} {% if m.photo %}
+            <img src="{{ m.photo.url }}" alt="chat photo" class="msg-photo" />
+            {% endif %}
+            <div class="msg-time">{{ m.created_at|date:"h:i A" }}</div>
+            {% if m.user_id == request.user.id and not m.is_deleted %}
+            <div class="msg-actions">
+              <form method="post" action="{% url 'delete_chat_message' m.id %}">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="delete-msg-btn"
+                  title="Delete message"
+                >
+                  &times;
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-chat">No messages yet. Start the conversation.</div>
+        {% endfor %}
+      </div>
+
+      <form method="post" enctype="multipart/form-data" class="composer">
+        {% csrf_token %}
+        <div class="form-group mb-2">
+          <textarea
+            id="id_message"
+            name="message"
+            class="form-control message-input"
+            placeholder="Write your message..."
+          ></textarea>
+        </div>
+        <div class="form-row align-items-center">
+          <div class="col-md-8 mb-2 mb-md-0">
+            <input
+              id="id_photo"
+              type="file"
+              name="photo"
+              class="form-control"
+              accept="image/*"
+            />
+          </div>
+          <div class="col-md-4 text-md-right">
+            <button type="submit" class="btn btn-success btn-block">
+              Send
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      (function () {
+        var box = document.getElementById("chatBox");
+        if (box) {
+          box.scrollTop = box.scrollHeight;
+        }
+      })();
+    </script>
+  </body>
+</html>

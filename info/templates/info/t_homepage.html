@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>homepage</title>
+    {% load static %}
+
+    <!-- Bootstrap core CSS -->
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom styles for this template -->
+    <link
+      href="{% static '/info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    {% include 'info/includes/theme_head.html' %}
+    <style>
+      .teacher-home .jumbotron {
+        padding: 1.75rem 1.75rem;
+      }
+
+      .teacher-home .welcome-name {
+        font-size: 2.1rem;
+        font-weight: 600;
+      }
+
+      .teacher-home .card-title {
+        font-size: 1.2rem;
+      }
+
+      .teacher-home .hero-left {
+        display: flex;
+        align-items: center;
+      }
+
+      .teacher-home .hero-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: auto;
+      }
+
+      .teacher-home .hero-actions .btn {
+        min-width: 190px;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 767.98px) {
+        .teacher-home .jumbotron {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .teacher-home .hero-actions {
+          margin-left: 0;
+          width: 100%;
+        }
+
+        .teacher-home .hero-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="teacher-home" data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            {% if request.resolver_match.url_name != 'notice' %}
+            <li class="nav-item">
+              <a
+                class="nav-link position-relative"
+                href="{% url 'notice' %}"
+              >
+                Notices
+                {% if has_new_notices %}
+                <span
+                  style="position: absolute; top: 8px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: #dc3545; border: 1px solid #fff;"
+                ></span>
+                {% endif %}
+              </a>
+            </li>
+            {% endif %}
+            {% if request.resolver_match.url_name != 't_student' %}
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 't_student' %}"
+              >
+                Students
+              </a>
+            </li>
+            {% endif %}
+            {% if request.resolver_match.url_name != 'teacher_timetable' %}
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 'teacher_timetable' request.user.teacher.id %}#show-modal"
+              >
+                Show Timetable
+              </a>
+            </li>
+            {% endif %}
+            {% if request.resolver_match.url_name != 'attendance_pdf_history' %}
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 'attendance_pdf_history' %}"
+              >
+                Attendance PDF
+              </a>
+            </li>
+            {% endif %}
+            {% if request.resolver_match.url_name != 'teacher_leave_apply' %}
+            <li>
+              <a class="nav-link position-relative" href="{% url 'teacher_leave_apply' %}">
+                Apply Leave
+              </a>
+            </li>
+            {% endif %}
+           
+           
+            <li>
+              <a
+                class="nav-link"
+                href="{% url 'index' %}"
+                data-toggle="modal"
+                data-target="#logoutModal"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+      <!-- Jumbotron Header -->
+      <header class="jumbotron my-4 d-flex align-items-center">
+        <div class="hero-left">
+          {% if request.user.teacher.photo %}
+          <img
+            src="{{ request.user.teacher.photo.url }}"
+            alt="Profile Photo"
+            class="rounded-circle"
+            style="width: 120px; height: 120px; object-fit: cover"
+          />
+          {% else %}
+          <img
+            src="{% static 'info/images/default.png' %}"
+            alt="Default Profile"
+            class="rounded-circle"
+            style="width: 120px; height: 120px; object-fit: cover"
+          />
+          {% endif %}
+          <h3 class="welcome-name text-capitalize mb-0 ml-3">
+            Welcome {{ request.user.teacher.name }}
+          </h3>
+        </div>
+        <div class="hero-actions">
+          <a href="{% url 'teacher_profile' %}" class="btn btn-dark">
+            Open Profile
+          </a>
+          
+        </div>
+      </header>
+      <!-- Page Features -->
+
+      <div class="row text-center">
+        {% if can_manage_subjects %}
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'add_subject' request.user.teacher.id %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/subjects.jpg' %}"
+                alt="Subject Management"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Subject Management</h4>
+              {% if hod_role_tags %}
+              <div class="mb-2">
+                {% for tag in hod_role_tags %}
+                <span class="badge badge-info mr-1 mb-1">HOD: {{ tag }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <p class="card-text">
+                Manage your assigned subjects and view available courses in your
+                department. Assign new subjects to teach and track your current
+                course load.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                href="{% url 'add_subject' request.user.teacher.id %}"
+                class="btn btn-primary"
+              >
+                Add Subjects
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="#" data-toggle="modal" data-target="#attendanceModal">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/attendance2.jpg' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Attendance</h4>
+              <p class="card-text">
+                Enter the attendance of the students based on the class they are
+                in. There is also the provision to edit the attendance of a
+                whole class or student individually.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="#"
+                data-toggle="modal"
+                data-target="#attendanceModal"
+              >
+                Enter Attendance</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'exam_list' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/exams.png' %}"
+                alt="Schedule Exams"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Schedule Exams</h4>
+              <p class="card-text">
+                Plan and schedule exams for your subjects. Create exams for
+                Sessional 1, Sessional 2, Mid Term, and Internal Practicals.
+                Mark exams as conducted when complete.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="{% url 'exam_list' %}"
+                >Manage Exams</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'exam_marks_list' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/marks.jpg' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Marks</h4>
+              <p class="card-text">
+                Select a conducted exam, then enter marks for scheduled
+                students. Only teachers assigned to the exam subject can submit
+                marks.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="{% url 'exam_marks_list' %}"
+                >Enter Marks</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'edit_timetable' request.user.teacher.id %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/timetable.png' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">TimeTable</h4>
+              <p class="card-text">
+                View the timetable in a tabular form. For a particular class, it
+                specifies a list of teachers who handle the same class that are
+                free for that time slot.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                class="btn btn-primary"
+                role="button"
+                href="{% url 'edit_timetable' request.user.teacher.id %}"
+                >View TimeTable</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'teacher_reports' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/reports.png' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Reports</h4>
+              <p class="card-text">
+                Generate subject-wise academic reports by session and semester,
+                including attendance, exam marks, eligibility, and summary
+                insights with PDF export.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a
+                href="{% url 'teacher_reports' %}"
+                class="btn btn-primary"
+                >Generate Reports</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'teacher_notes' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/Notes.jpg' %}"
+                alt=""
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Notes Sharing</h4>
+              <p class="card-text">
+                Upload and manage subject notes for your classes in one place.
+                Students will be able to access these notes later.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'teacher_notes' %}" class="btn btn-primary"
+                >Manage Notes</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'teacher_assignments' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/assignment.png' %}"
+                alt="Assignments"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Assignments</h4>
+              <p class="card-text">
+                Upload assignments for your own subjects and track student
+                submissions.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'teacher_assignments' %}" class="btn btn-primary"
+                >Manage Assignments</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'teacher_shared_documents' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/doc.jpg' %}"
+                alt="Shared Documents"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Shared Documents</h4>
+              <p class="card-text">
+                Open the documents shared by students and download verified files.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'teacher_shared_documents' %}" class="btn btn-primary"
+                >Open Shared Docs</a
+              >
+            </div>
+          </div>
+        </div>
+
+        {% if can_manage_subjects %}
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'teacher_student_leave_requests' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/leave.png' %}"
+                alt="Student Leave Requests"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Student Leave Requests</h4>
+              <p class="card-text">
+                Review student leave applications sent to you and approve or
+                reject with remarks.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'teacher_student_leave_requests' %}" class="btn btn-primary"
+                >Open Requests</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card">
+            <a href="{% url 'teacher_student_counseling_requests' %}">
+              <img
+                class="card-img-top"
+                src="{% static 'info/images/couns.jpg' %}"
+                alt="Student Counseling Requests"
+              />
+            </a>
+            <div class="card-body">
+              <h4 class="card-title">Counseling Requests</h4>
+              <p class="card-text">
+                Review student counseling support requests and update status
+                as in progress, resolved, or rejected.
+              </p>
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'teacher_student_counseling_requests' %}" class="btn btn-primary"
+                >Open Counseling</a
+              >
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+      <!-- /.row -->
+    </div>
+    <!-- /.container -->
+
+    <div
+      class="modal fade"
+      id="attendanceModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="attendanceModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="attendanceModalLabel">Enter Attendance</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form method="post" action="{% url 'teacher_home' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="attendanceSession">Session</label>
+                <select id="attendanceSession" name="session" class="form-control" required>
+                  <option value="">Select session</option>
+                  {% for session in sessions %}
+                  <option value="{{ session.id }}" {% if selected_session == session.id|stringformat:'s' %}selected{% endif %}>{{ session.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="attendanceSemester">Semester</label>
+                <select id="attendanceSemester" name="semester" class="form-control" required>
+                  <option value="">Select semester</option>
+                </select>
+              </div>
+
+              <div class="form-group mb-0">
+                <label for="attendanceSubject">Subject</label>
+                <select id="attendanceSubject" name="subject" class="form-control" required>
+                  <option value="">Select subject</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Open Attendance</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Select "Logout" below to end your session.
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <form
+              action="{% url 'logout' %}"
+              method="post"
+              style="display: inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Bootstrap core JavaScript -->
+
+    <a
+      href="{% url 'chatroom' %}"
+      title="Chatroom"
+      style="position: fixed; left: 20px; bottom: 20px; width: 58px; height: 58px; border-radius: 50%; background: #007bff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); z-index: 1100;"
+    >
+      Chat
+      {% if has_new_messages %}
+      <span
+        style="position: absolute; top: 5px; right: 5px; width: 10px; height: 10px; border-radius: 50%; background: #dc3545; border: 1px solid #fff;"
+      ></span>
+      {% endif %}
+    </a>
+
+    <script src="{% static '/info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+      (function () {
+        var options = JSON.parse("{{ attendance_options_json|default:'[]'|escapejs }}");
+        var selectedSession = "{{ selected_session|default:''|escapejs }}";
+        var selectedSemester = "{{ selected_semester|default:''|escapejs }}";
+        var selectedSubject = "{{ selected_subject|default:''|escapejs }}";
+        var openModal = "{{ open_attendance_modal|yesno:'1,0' }}" === "1";
+
+        var sessionSelect = document.getElementById("attendanceSession");
+        var semesterSelect = document.getElementById("attendanceSemester");
+        var subjectSelect = document.getElementById("attendanceSubject");
+
+        if (!sessionSelect || !semesterSelect || !subjectSelect) {
+          return;
+        }
+
+        function fillSelect(selectEl, items, valueKey, labelKey, placeholder, selectedValue) {
+          selectEl.innerHTML = "";
+          var placeholderOption = document.createElement("option");
+          placeholderOption.value = "";
+          placeholderOption.textContent = placeholder;
+          selectEl.appendChild(placeholderOption);
+
+          items.forEach(function (item) {
+            var option = document.createElement("option");
+            option.value = String(item[valueKey]);
+            option.textContent = item[labelKey];
+            if (selectedValue && option.value === String(selectedValue)) {
+              option.selected = true;
+            }
+            selectEl.appendChild(option);
+          });
+        }
+
+        function getSemestersForSession(sessionId) {
+          var semesterMap = {};
+          options.forEach(function (option) {
+            if (String(option.session_id) === String(sessionId)) {
+              semesterMap[String(option.semester)] = option.semester;
+            }
+          });
+
+          return Object.keys(semesterMap)
+            .map(function (key) {
+              return { value: semesterMap[key], label: semesterMap[key] };
+            })
+            .sort(function (first, second) {
+              return Number(first.value) - Number(second.value);
+            });
+        }
+
+        function getSubjects(sessionId, semester) {
+          var subjectMap = {};
+          options.forEach(function (option) {
+            if (
+              String(option.session_id) === String(sessionId) &&
+              String(option.semester) === String(semester)
+            ) {
+              subjectMap[String(option.subject_id)] = option.subject_name;
+            }
+          });
+
+          return Object.keys(subjectMap)
+            .map(function (key) {
+              return { id: key, name: subjectMap[key] };
+            })
+            .sort(function (first, second) {
+              return first.name.localeCompare(second.name);
+            });
+        }
+
+        function refreshSubjects() {
+          var sessionId = sessionSelect.value;
+          var semester = semesterSelect.value;
+          var subjects = getSubjects(sessionId, semester);
+          fillSelect(
+            subjectSelect,
+            subjects,
+            "id",
+            "name",
+            "Select subject",
+            selectedSubject
+          );
+          selectedSubject = subjectSelect.value || "";
+        }
+
+        function refreshSemesters() {
+          var sessionId = sessionSelect.value;
+          var semesterItems = getSemestersForSession(sessionId);
+          fillSelect(
+            semesterSelect,
+            semesterItems,
+            "value",
+            "label",
+            "Select semester",
+            selectedSemester
+          );
+          selectedSemester = semesterSelect.value || "";
+          refreshSubjects();
+        }
+
+        sessionSelect.addEventListener("change", function () {
+          selectedSession = sessionSelect.value;
+          selectedSemester = "";
+          selectedSubject = "";
+          refreshSemesters();
+        });
+
+        semesterSelect.addEventListener("change", function () {
+          selectedSemester = semesterSelect.value;
+          selectedSubject = "";
+          refreshSubjects();
+        });
+
+        if (selectedSession) {
+          sessionSelect.value = selectedSession;
+        }
+        if (selectedSemester) {
+          semesterSelect.value = selectedSemester;
+        }
+        refreshSemesters();
+
+        if (openModal) {
+          $("#attendanceModal").modal("show");
+
+          // Open once when arriving from sidebar, then clean URL so refresh won't reopen.
+          if (window.history && window.history.replaceState) {
+            var cleanedUrl = new URL(window.location.href);
+            cleanedUrl.searchParams.delete("open_attendance");
+            window.history.replaceState({}, document.title, cleanedUrl.pathname + cleanedUrl.search + cleanedUrl.hash);
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

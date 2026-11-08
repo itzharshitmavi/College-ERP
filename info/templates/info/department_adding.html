@@ -1,0 +1,162 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Department to Course</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="{% static 'info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+    />
+    {% include 'info/includes/theme_head.html' %}
+
+    <style>
+      body {
+        background-color: #f5f7fa;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .form-container {
+        max-width: 720px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 40px 35px;
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(99, 99, 99, 0.1);
+        transition: box-shadow 0.3s ease-in-out;
+      }
+      .form-container:hover {
+        box-shadow: 0 12px 40px rgba(99, 99, 99, 0.15);
+      }
+      h2 {
+        color: #007bff;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+      }
+      .form-label {
+        font-weight: 600;
+        color: #4a4a4a;
+      }
+      .btn-primary {
+        padding: 10px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 30px;
+        transition: background-color 0.3s ease;
+      }
+      .btn-primary:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a href="{% url 'course_add' %}" class="nav-link">
+                Add Courses
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container form-container">
+      <h2>Add Department to Course</h2>
+
+      <form
+        method="post"
+        action="{% url 'add_department_to_course' %}"
+        novalidate
+      >
+        {% csrf_token %}
+        <div class="col g-3 align-items-end">
+          <div class="col-md-5">
+            <label for="course" class="form-label"
+              >Select Course <span class="text-danger">*</span></label
+            >
+            <select id="course" name="course" class="form-select" required>
+              <option value="">Select Course</option>
+              {% for course in courses %}
+              <option value="{{ course.id }}">{{ course.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-5">
+            <label for="department_name" class="form-label"
+              >Department Name <span class="text-danger">*</span></label
+            >
+            <input
+              id="department_name"
+              name="department_name"
+              type="text"
+              maxlength="50"
+              class="form-control"
+              placeholder="Enter department name"
+              required
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="col-md-5">
+            <label for="department_short_name" class="form-label"
+              >Department Short Name<span class="text-danger">*</span></label
+            >
+            <input
+              id="department_short_name"
+              name="department_short_name"
+              type="text"
+              maxlength="50"
+              class="form-control"
+              placeholder="Enter short name"
+              required
+              autocomplete="off"
+            />
+          </div>
+          <div class="col-12 text-center mt-4">
+            <button type="submit" class="btn btn-primary w-100">
+              Add Department
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script src="{% static 'info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

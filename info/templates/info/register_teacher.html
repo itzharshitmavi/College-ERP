@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teacher Registration</title>
+
+    {% load static %}
+    <!-- Bootstrap core CSS -->
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom styles for this template -->
+    <link
+      href="{% static '/info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    {% include 'info/includes/theme_head.html' %}
+    <style>
+      #photoPreview {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        margin-bottom: 1rem;
+        display: none;
+      }
+    </style>
+  </head>
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <div class="container mt-5">
+      <h2 class="mb-4">Teacher Registration</h2>
+
+      {% if messages %} {% for message in messages %}
+      <div class="alert alert-danger">{{ message }}</div>
+      {% endfor %} {% endif %}
+
+      <!-- <form method="post" class="border p-4 shadow rounded"> -->
+      <!-- {% csrf_token %} -->
+      <!-- Add enctype for files -->
+      <form
+        method="post"
+        enctype="multipart/form-data"
+        class="border p-4 shadow rounded"
+      >
+        {% csrf_token %}
+
+        <!-- Photo upload + preview -->
+        <div class="mb-3">
+          <label for="id_photo" class="form-label">Upload Photo</label>
+          <input
+            type="file"
+            name="photo"
+            id="id_photo"
+            accept="image/*"
+            class="form-control"
+          />
+          <img id="photoPreview" alt="Photo Preview" />
+        </div>
+
+        <div class="mb-3">
+          <input
+            type="text"
+            name="name"
+            class="form-control"
+            placeholder="Full Name"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <input
+            type="email"
+            name="email"
+            class="form-control"
+            placeholder="Email"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <input
+            type="date"
+            name="dob"
+            class="form-control"
+            placeholder="Date of Birth"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <input
+            type="tel"
+            name="phone"
+            class="form-control"
+            placeholder="Phone Number"
+            pattern="[0-9]{10}"
+            maxlength="10"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <select name="course" id="courseSelect" class="form-select" required>
+            <option value="">Select Course</option>
+            {% for co in courses %}
+            <option value="{{ co.id }}">{{ co.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <select
+            name="department"
+            id="departmentSelect"
+            class="form-select"
+            required
+          >
+            <option value="">Select Department</option>
+            <!-- {% for dept in departments %}
+            <option value="{{ dept.id }}">{{ dept.name }}</option>
+            {% endfor %} -->
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <select name="sex" class="form-select" required>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            placeholder="Password"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <input
+            type="password"
+            name="confirm"
+            class="form-control"
+            placeholder="Confirm Password"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Register</button>
+        <!-- </form> -->
+      </form>
+    </div>
+    <script id="courseDepartmentsData" type="application/json">
+      {{ course_departments_json|safe }}
+    </script>
+    <script>
+      document
+        .querySelectorAll('input[type="number"], input[type="tel"]')
+        .forEach((input) => {
+          input.addEventListener("keypress", function (e) {
+            if (!/[0-9]/.test(e.key)) {
+              e.preventDefault();
+            }
+          });
+        });
+      const photoInput = document.getElementById("id_photo");
+      const photoPreview = document.getElementById("photoPreview");
+
+      photoInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            photoPreview.setAttribute("src", e.target.result);
+            photoPreview.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          photoPreview.style.display = "none";
+          photoPreview.removeAttribute("src");
+        }
+      });
+
+      // Dynamic loading of departments based on selected course
+      const courseDepartments = JSON.parse(
+        document.getElementById("courseDepartmentsData").textContent
+      );
+      const courseSelect = document.getElementById("courseSelect");
+      const departmentSelect = document.getElementById("departmentSelect");
+
+      // Initially disable department dropdown until a course is selected
+      departmentSelect.disabled = true;
+
+      courseSelect.addEventListener("change", () => {
+        const selectedCourseId = courseSelect.value;
+        departmentSelect.innerHTML =
+          '<option value="">Select Department</option>';
+
+        if (
+          courseDepartments[selectedCourseId] &&
+          courseDepartments[selectedCourseId].length > 0
+        ) {
+          courseDepartments[selectedCourseId].forEach((dept) => {
+            const option = document.createElement("option");
+            option.value = dept.id;
+            option.textContent = dept.name;
+            departmentSelect.appendChild(option);
+          });
+          departmentSelect.disabled = false;
+        } else {
+          departmentSelect.disabled = true;
+        }
+      });
+    </script>
+  </body>
+</html>

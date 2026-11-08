@@ -1,0 +1,70 @@
+{% load static %}
+{% load dict_extras %}
+<link href="{% static 'info/homepage/css/icard.css' %}" rel="stylesheet" />
+
+<div class="scrollable-pane">
+  {% if assigned_teachers %} {% for teacher in assigned_teachers %}
+  <div class="teacher-id-card">
+    <img src="{{ teacher.photo.url }}" alt="{{ teacher.name }}" />
+    <div class="teacher-id-card-header">{{ teacher.name }}</div>
+    <div class="teacher-id-card-body">
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">Email</div>
+        <div class="teacher-id-value">{{ teacher.email }}</div>
+      </div>
+
+      {% if teacher.phone %}
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">Phone</div>
+        <div class="teacher-id-value">{{ teacher.phone }}</div>
+      </div>
+      {% endif %} {% if teacher.dept %}
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">Department</div>
+        <div class="teacher-id-value">{{ teacher.dept.name }}</div>
+      </div>
+      {% endif %} {% if teacher.course %}
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">Course</div>
+        <div class="teacher-id-value">{{ teacher.course.name }}</div>
+      </div>
+      {% endif %}
+
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">Sex</div>
+        <div class="teacher-id-value">{{ teacher.sex }}</div>
+      </div>
+
+      {% if teacher.dob %}
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">Date of Birth</div>
+        <div class="teacher-id-value">{{ teacher.dob|date:"M d, Y" }}</div>
+      </div>
+      {% endif %}
+
+      {% with teacher_hod_tags=hod_tags_by_teacher|get_item:teacher.id %}
+      {% if teacher_hod_tags %}
+      <div class="teacher-id-card-section">
+        <div class="teacher-id-label">HOD Role</div>
+        <div class="teacher-id-value">
+          {% for hod_tag in teacher_hod_tags %}
+          <span class="badge badge-primary mr-1 mb-1">{{ hod_tag }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <div>
+        <span
+          class="status-badge {% if teacher.status == 'Active' %}status-active{% elif teacher.status == 'Pending' %}status-pending{% else %}status-other{% endif %}"
+        >
+          {{ teacher.status }}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% endfor %} {% else %}
+  <p>No teachers assigned to this subject.</p>
+  {% endif %}
+</div>

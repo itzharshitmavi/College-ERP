@@ -1,0 +1,199 @@
+{% extends 'info/base.html' %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="text-center">Timetable</h2>
+      <p class="text-center text-muted mb-4">
+        {{ session_obj.name }} - Semester {{ semester }}
+      </p>
+    </div>
+    <div id="no-more-tables" class="col-12">
+      {% if time_slots %}
+      <table
+        class="col-sm-12 table table-bordered table-striped table-condensed cf"
+      >
+        <thead class="cf">
+          <tr>
+            <th>Day</th>
+            {% for start_time, end_time in time_slots %}
+            <th>{{ start_time|time:"g:i A" }} - {{ end_time|time:"g:i A" }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in matrix %}
+          <tr>
+            {% for cell in row %} {% if forloop.counter == 1 %}
+            <td><b>{{ cell }}</b></td>
+            {% else %}
+            <td>
+              {% if cell %} {% for entry in cell %}
+              <a
+                href="{{ entry.free_teacher_url }}"
+                onclick="return openFreeTeachersDialog('{{ entry.free_teacher_url }}');"
+                class="d-block"
+              >
+                {{ entry.text }}
+              </a>
+              {% endfor %} {% else %} - {% endif %}
+            </td>
+            {% endif %} {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="alert alert-info text-center mb-0">
+        No timetable is available for your current session and semester.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div id="freeTeachersDialog" class="ft-dialog-backdrop" style="display: none">
+  <div
+    class="ft-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="freeTeachersDialogTitle"
+  >
+    <div class="ft-dialog-header">
+      <h5 id="freeTeachersDialogTitle" class="mb-0">
+        Free Teachers At This Time
+      </h5>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        onclick="closeFreeTeachersDialog()"
+      >
+        X
+      </button>
+    </div>
+    <div class="ft-dialog-body">
+      <div id="freeTeachersContent" class="h-100 overflow-auto"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ft-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .ft-dialog {
+    width: min(920px, 100%);
+    height: min(680px, 92vh);
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ft-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .ft-dialog-body {
+    flex: 1;
+    min-height: 0;
+  }
+
+  @media (max-width: 576px) {
+    .ft-dialog {
+      height: 96vh;
+      border-radius: 8px;
+    }
+  }
+</style>
+
+<script>
+  const currentSessionName = "{{ session_obj.name|default:'-'|escapejs }}";
+  const currentSemester = "{{ semester|default:'-'|escapejs }}";
+
+  function openFreeTeachersDialog(url) {
+    const dialog = document.getElementById("freeTeachersDialog");
+    const content = document.getElementById("freeTeachersContent");
+    content.innerHTML =
+      '<div class="p-4 text-center text-muted">Loading free teachers...</div>';
+    dialog.style.display = "flex";
+
+    fetch(url, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      credentials: "same-origin",
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load free teachers");
+        }
+        return response.text();
+      })
+      .then(function (html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const mainContent = doc.querySelector(".container.py-4") || doc.body;
+        let resolvedHtml = mainContent ? mainContent.innerHTML : html;
+
+        // Defensive fallback: if unresolved template tokens leak into response, replace them.
+        resolvedHtml = resolvedHtml
+          .replace(
+            /\{\{\s*slot_session_name(?:\|[^}]*)?\s*\}\}/g,
+            currentSessionName || "-",
+          )
+          .replace(
+            /\{\{\s*slot_semester(?:\|[^}]*)?\s*\}\}/g,
+            currentSemester || "-",
+          )
+          .replace(/\{\{\s*slot_end_display(?:\|[^}]*)?\s*\}\}/g, "-")
+          .replace(/\{\{\s*[^}]+\s*\}\}/g, "-");
+
+        content.innerHTML = resolvedHtml;
+      })
+      .catch(function () {
+        content.innerHTML =
+          '<div class="p-4 text-center">Unable to load free teachers. <a href="' +
+          url +
+          '" target="_blank" rel="noopener">Open in new tab</a></div>';
+      });
+
+    return false;
+  }
+
+  function closeFreeTeachersDialog() {
+    const dialog = document.getElementById("freeTeachersDialog");
+    const content = document.getElementById("freeTeachersContent");
+    dialog.style.display = "none";
+    content.innerHTML = "";
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeFreeTeachersDialog();
+    }
+  });
+
+  document
+    .getElementById("freeTeachersDialog")
+    .addEventListener("click", function (event) {
+      if (event.target.id === "freeTeachersDialog") {
+        closeFreeTeachersDialog();
+      }
+    });
+</script>
+{% endblock %}

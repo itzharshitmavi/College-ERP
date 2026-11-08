@@ -1,0 +1,106 @@
+{% extends 'info/base.html' %}
+
+{% block css %}
+<style>
+  .surface-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+
+  .status-pending { background: #fff8e5; color: #8a6d1d; }
+  .status-verified { background: #e8f7ed; color: #1f6f3c; }
+  .status-rejected { background: #fdecec; color: #8d2d2d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">Student Document Vault (Admin)</h3>
+    <small class="text-muted">Review and verify uploaded student documents.</small>
+  </div>
+
+  <div class="card surface-card mb-3">
+    <div class="card-body">
+      <form method="get" class="form-inline">
+        <label class="mr-2" for="id_status">Status</label>
+        <select id="id_status" name="status" class="form-control mr-2">
+          {% for status in status_choices %}
+          <option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card surface-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="thead-light">
+            <tr>
+              <th>Student</th>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Note</th>
+              <th>Uploaded</th>
+              <th>File</th>
+              <th>Review</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doc in documents %}
+            <tr>
+              <td>
+                {{ doc.student.name }}
+                <small class="text-muted d-block">Roll: {{ doc.student.roll|default:'-' }}</small>
+                <small class="text-muted d-block">{{ doc.student.dept.name|default:'-' }} | {{ doc.student.course.name|default:'-' }}</small>
+              </td>
+              <td>{{ doc.document_type }}</td>
+              <td>{{ doc.title }}</td>
+              <td><span class="status-pill status-{{ doc.status|lower }}">{{ doc.status }}</span></td>
+              <td>{{ doc.review_note|default:'-' }}</td>
+              <td>{{ doc.uploaded_at|date:"d M Y, h:i A" }}</td>
+              <td>
+                <a href="{% url 'student_document_download' doc.id %}" class="btn btn-sm btn-outline-primary">Download</a>
+              </td>
+              <td>
+                <form method="post" class="mb-1">
+                  {% csrf_token %}
+                  <input type="hidden" name="document_id" value="{{ doc.id }}">
+                  <input type="hidden" name="action" value="verify">
+                  <input type="text" name="review_note" class="form-control form-control-sm mb-1" placeholder="Note (optional)">
+                  <button type="submit" class="btn btn-sm btn-success">Verify</button>
+                </form>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="document_id" value="{{ doc.id }}">
+                  <input type="hidden" name="action" value="reject">
+                  <input type="text" name="review_note" class="form-control form-control-sm mb-1" placeholder="Rejection reason">
+                  <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-3">No documents found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

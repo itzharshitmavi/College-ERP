@@ -1,0 +1,182 @@
+{% extends 'info/base.html' %}
+{% load static %}
+
+{% block css %}
+<style>
+  .attendance-hero {
+    border-radius: 14px;
+    background: linear-gradient(120deg, #1a3a5a 0%, #206d8c 100%);
+    color: #fff;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 10px 24px rgba(16, 46, 72, 0.2);
+  }
+
+  .attendance-hero h4 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .attendance-hero p {
+    margin: 0.35rem 0 0;
+    opacity: 0.92;
+  }
+
+  .surface-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .attendance-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .attendance-table thead th {
+    background: #f8fbfd;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .attendance-table td,
+  .attendance-table th {
+    padding: 0.68rem 0.8rem;
+  }
+
+  .attendance-table tbody td {
+    border-top: 1px solid #eef2f7;
+    vertical-align: middle;
+  }
+
+  .attendance-table tbody tr:nth-child(even) {
+    background: #fcfdff;
+  }
+
+  .attendance-table tbody tr:hover {
+    background: #f3f8ff;
+  }
+
+  .choice-group .btn {
+    min-width: 100px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="attendance-hero mb-3">
+    <h4>Mark Attendance</h4>
+    <p>
+      Subject: {{ timetable_slot.subject.name }} | Day: {{ timetable_slot.day }} |
+      Time: {{ time_range_display|default:timetable_slot.start_time }}
+    </p>
+  </div>
+
+  <div class="card surface-card">
+    <div class="card-body">
+      {% if students %}
+      <form method="POST" action="{% url 'confirm' att_record.id %}">
+        {% csrf_token %}
+
+        <div class="alert alert-warning mb-3">
+          <i class="fas fa-info-circle"></i>
+          Select status for each student. Unmarked students are treated as Absent.
+        </div>
+
+        <div class="table-responsive">
+          <table class="table attendance-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Roll Number</th>
+                <th>Student Name</th>
+                <th style="width: 320px;">Attendance Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ student.roll }}</td>
+                <td>{{ student.name }}</td>
+                <td>
+                  <div class="btn-group choice-group" role="group">
+                    <label class="btn btn-outline-success">
+                      <input type="radio" name="{{ student.id }}" value="present" autocomplete="off" />
+                      <i class="fas fa-check"></i> Present
+                    </label>
+                    <label class="btn btn-outline-danger active">
+                      <input type="radio" name="{{ student.id }}" value="absent" autocomplete="off" checked />
+                      <i class="fas fa-times"></i> Absent
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <hr class="my-3" />
+
+        <div class="alert alert-light border mb-3">
+          <h6 class="mb-2">If this lecture was not held</h6>
+          <div class="form-group mb-2">
+            <div>
+              <label class="mr-3 mb-0">
+                <input type="radio" name="session_action" value="held" checked />
+                Class Held (mark attendance)
+              </label>
+              <label class="mb-0">
+                <input type="radio" name="session_action" value="not_held" />
+                Class Not Held (skip attendance)
+              </label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-4 form-group mb-2">
+              <label for="id_non_teaching_reason">Reason</label>
+              <select id="id_non_teaching_reason" name="non_teaching_reason" class="form-control">
+                <option value="college_off">College Off</option>
+                <option value="seminar_event">Seminar/Event</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-md-8 form-group mb-0">
+              <label for="id_non_teaching_note">Note (optional)</label>
+              <input id="id_non_teaching_note" type="text" name="non_teaching_note" class="form-control" placeholder="e.g. Annual function, external event" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 d-flex flex-wrap" style="gap: 0.6rem;">
+          <a href="{% url 'download_attendance_pdf' att_record.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-file-pdf"></i> Download PDF
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Submit Attendance
+          </button>
+          <a href="{% url 'teacher_timetable' timetable_slot.teacher.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+        </div>
+      </form>
+
+      {% else %}
+      <div class="alert alert-warning mb-3">
+        <i class="fas fa-exclamation-triangle"></i>
+        No students are enrolled in this subject yet.
+      </div>
+      <a href="{% url 'teacher_timetable' timetable_slot.teacher.id %}" class="btn btn-secondary">Back</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

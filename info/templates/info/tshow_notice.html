@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notices</title>
+    {% load static %}
+
+    <!-- Bootstrap core CSS -->
+    <link
+      href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Custom styles for this template -->
+    <link
+      href="{% static '/info/homepage/css/heroic-features.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    {% include 'info/includes/theme_head.html' %}
+  </head>
+  <body data-theme="{{ theme_mode|default:'light' }}">
+    {% include 'info/includes/theme_toggle.html' %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">CollegeERP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            {% if request.resolver_match.url_name == 'index' %} {% elif
+            request.resolver_match.url_name == 'home' %} {% elif
+            request.resolver_match.url_name == 'teacher_home' %} {% else %}
+            <li>
+              <a class="nav-link" href="{% url 'index' %}">
+                <span>Home</span>
+              </a>
+            </li>
+            {% if request.user.is_student %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'student_subjects' %}"
+                >Subjects</a
+              >
+            </li>
+             <li>
+            <a class="nav-link" href="{% url 'student_course_teachers' %}">Teachers</a>
+          </li>
+             <li>
+            <a class="nav-link" href="{% url 'student_my_report_pdf' %}">My Report</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_leave_apply' %}">Apply Leave</a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'student_document_vault' %}">Document Vault</a>
+          </li>
+            {% endif %}
+
+            
+
+            {% endif %} {% if request.user.is_teacher %}
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 't_student' %}"
+              >
+                Students
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 'teacher_timetable' request.user.teacher.id %}#show-modal"
+              >
+                Show Timetable
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 'attendance_pdf_history' %}"
+              >
+                Attendance PDF
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link position-relative"
+                href="{% url 'teacher_leave_apply' %}"
+              >
+                Apply Leave
+              </a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#"
+                data-toggle="modal"
+                data-target="#logoutModal"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container py-4">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card shadow-lg border-0 rounded mb-4">
+            <div
+              class="card-header bg-primary text-white d-flex align-items-center"
+            >
+              <i class="bi bi-megaphone-fill fs-4 me-2"></i>
+              <h4 class="mb-0 flex-grow-1">Special Updates & Notices</h4>
+            </div>
+            <div class="card-body p-0">
+              {% if special_update_notes %}
+              <ul>
+                {% for note in special_update_notes %}
+                <li>
+                  <div>
+                    <a
+                      href="{{ note.pdf_file.url }}"
+                      target="_blank"
+                      class="fw-bold fs-5 text-decoration-none"
+                    >
+                      {{ note.title }} --- Uploaded: {{ note.uploaded_at|date:"d M Y, h:i A" }}
+                    </a>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No special updates available.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ready to Leave?</h5>
+            <button class="close" type="button" data-dismiss="modal">
+              <span>×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Select "Logout" below to end your session.
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-dismiss="modal">
+              Cancel
+            </button>
+            <form action="{% url 'logout' %}" method="post" style="display: inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static '/info/homepage/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/info/homepage/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

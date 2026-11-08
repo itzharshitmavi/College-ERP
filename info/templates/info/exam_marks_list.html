@@ -1,0 +1,110 @@
+{% extends 'info/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Enter Exam Marks</h2>
+    <a href="{% url 'exam_list' %}" class="btn btn-outline-secondary">Back to Exams</a>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="form-inline">
+        <div class="form-group mr-2 mb-2">
+          <select name="session" class="form-control">
+            <option value="">All Sessions</option>
+            {% for sess in sessions %}
+            <option value="{{ sess.id }}" {% if selected_session == sess.id|stringformat:'s' %}selected{% endif %}>{{ sess.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="semester" class="form-control">
+            <option value="">All Semesters</option>
+            {% for sem in semesters %}
+            <option value="{{ sem }}" {% if selected_semester == sem|stringformat:'s' %}selected{% endif %}>Semester {{ sem }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          {% if selected_course %}<input type="hidden" name="course" value="{{ selected_course }}">{% endif %}
+          {% if selected_course %}<input type="hidden" name="course" value="{{ selected_course }}">{% endif %}
+          <select name="exam_type" class="form-control">
+            <option value="">All Exam Types</option>
+            {% for exam_t, exam_label in exam_types %}
+            <option value="{{ exam_t }}" {% if selected_exam_type == exam_t %}selected{% endif %}>{{ exam_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-outline-primary mb-2">Filter</button>
+        <a href="{% url 'exam_marks_list' %}" class="btn btn-outline-secondary mb-2 ml-2">Reset</a>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <strong>Conducted Exams Available for Marks Entry</strong>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Subject</th>
+            <th>Exam Type</th>
+            <th>Session</th>
+            <th>Semester</th>
+            <th>Date</th>
+            <th>Total Marks</th>
+            <th>Students</th>
+            <th>Entered</th>
+            <th>Remaining</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in exam_rows %}
+          <tr>
+            <td><strong>{{ row.exam.subject.name }}</strong></td>
+            <td>{{ row.exam.exam_type }}</td>
+            <td>{{ row.exam.session.name }}</td>
+            <td>Semester {{ row.exam.semester }}</td>
+            <td>
+              {% if row.exam.date_conducted %}
+                {{ row.exam.date_conducted|date:"d-M-Y" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>{{ row.exam.total_marks }}</td>
+            <td>{{ row.scheduled_count }}</td>
+            <td>{{ row.entered_count }}</td>
+            <td>
+              {% if row.remaining_count == 0 and row.scheduled_count > 0 %}
+              <span class="badge bg-success">Completed</span>
+              {% else %}
+              <span class="badge bg-warning">{{ row.remaining_count }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.remaining_count > 0 %}
+              <a href="{% url 'exam_marks_entry' row.exam.id %}" class="btn btn-sm btn-primary">Enter Marks</a>
+              {% elif row.scheduled_count > 0 %}
+              <span class="badge bg-success">Completed</span>
+              {% else %}
+              <span class="text-muted">No students</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="text-center text-muted py-4">
+              No conducted exams found for your assigned subjects.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

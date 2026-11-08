@@ -1,0 +1,112 @@
+{% extends 'info/base.html' %}
+
+{% block css %}
+<style>
+  .notes-hero {
+    border-radius: 14px;
+    background: linear-gradient(120deg, #183650 0%, #1f6f8b 100%);
+    color: #fff;
+    padding: 1.15rem 1.2rem;
+    box-shadow: 0 10px 24px rgba(12, 42, 67, 0.18);
+  }
+
+  .notes-hero h4 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .notes-hero p {
+    margin: 0.3rem 0 0;
+    opacity: 0.92;
+  }
+
+  .surface-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .note-item {
+    border: 1px solid var(--erp-border, #e5eaf1);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--erp-surface, #fff);
+  }
+
+  .meta {
+    font-size: 12px;
+    color: var(--erp-muted, #6b7280);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="notes-hero mb-3">
+    <h4>Uploaded Notes</h4>
+    <p>View notes shared by teachers for your assigned subjects.</p>
+  </div>
+
+  <div class="card surface-card">
+    <div class="card-body">
+      <form method="get" class="mb-3">
+        <div class="form-row">
+          <div class="col-md-3 mb-2">
+            <select name="subject" class="form-control">
+              <option value="">All Subjects</option>
+              {% for subject in filter_subjects %}
+              <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:'s' %}selected{% endif %}>{{ subject.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 mb-2">
+            <select name="session" class="form-control">
+              <option value="">All Sessions</option>
+              {% for s in sessions %}
+              <option value="{{ s.session__id }}" {% if selected_session == s.session__id|stringformat:'s' %}selected{% endif %}>{{ s.session__name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2 mb-2">
+            <select name="semester" class="form-control">
+              <option value="">Sem</option>
+              {% for sem in semesters %}
+              <option value="{{ sem }}" {% if selected_semester == sem|stringformat:'s' %}selected{% endif %}>{{ sem }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4 mb-2">
+            <input type="text" name="q" class="form-control" placeholder="Search title or description" value="{{ search_query }}" />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-outline-primary btn-sm">Apply Filters</button>
+        <a href="{% url 'student_notes' %}" class="btn btn-outline-secondary btn-sm">Reset</a>
+      </form>
+
+      <div class="row">
+        {% for note in notes %}
+        <div class="col-12 mb-3">
+          <div class="note-item">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="mb-1"><a href="{{ note.file.url }}" target="_blank">{{ note.title }}</a></h6>
+                <div class="meta mb-1">
+                  By {{ note.teacher.name }} | {{ note.subject.name }} | {{ note.session.name }} / Sem {{ note.semester }}
+                </div>
+                {% if note.description %}
+                <div class="small text-muted">{{ note.description|truncatechars:180 }}</div>
+                {% endif %}
+              </div>
+              <a href="{{ note.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Open</a>
+            </div>
+            <div class="meta mt-2">Uploaded on {{ note.created_at|date:'d M Y, h:i A' }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><div class="alert alert-info mb-0">No notes are available for your assigned subjects yet.</div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

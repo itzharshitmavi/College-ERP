@@ -1,0 +1,348 @@
+{% extends 'info/base.html' %}
+{% block css %}
+<style>
+  .exam-hero {
+    border-radius: 14px;
+    background: linear-gradient(120deg, #0b3c5d 0%, #1273a8 100%);
+    color: #fff;
+    padding: 1.2rem 1.25rem;
+    box-shadow: 0 10px 24px rgba(11, 60, 93, 0.22);
+  }
+
+  .exam-hero h4 {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+  }
+
+  .exam-hero p {
+    margin: 0;
+    opacity: 0.92;
+  }
+
+  .stats-grid .metric-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.1);
+    overflow: hidden;
+  }
+
+  .metric-card .metric-title {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .metric-card .metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-accent-total { border-top: 4px solid #0d6efd; }
+  .metric-accent-pending { border-top: 4px solid #f59f00; }
+  .metric-accent-done { border-top: 4px solid #0ca678; }
+  .filter-card,
+  .table-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+
+  .filter-card .form-control {
+    min-width: 150px;
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .quick-chip {
+    border: 1px solid #d6dee6;
+    border-radius: 999px;
+    background: #fff;
+    color: #264653;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+  }
+
+  .quick-chip:hover {
+    background: #f2f8fc;
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .status-conducted {
+    background: #e6fcf5;
+    color: #087f5b;
+  }
+
+  .status-pending {
+    background: #fff9db;
+    color: #a66f00;
+  }
+
+  .muted-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  .table thead th {
+    white-space: nowrap;
+    background: #f8fbfd;
+  }
+
+  .empty-state {
+    padding: 1.3rem;
+    text-align: center;
+    color: #6c757d;
+  }
+
+  @media (max-width: 768px) {
+    .filter-card form {
+      display: block !important;
+    }
+
+    .filter-card .form-group,
+    .filter-card .btn {
+      width: 100%;
+      margin-right: 0 !important;
+    }
+
+    .filter-card .form-control {
+      width: 100%;
+    }
+
+    .metric-card .metric-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="exam-hero mb-3">
+    <h4>My Scheduled Exams</h4>
+    <p>Track upcoming assessments and conducted exams in one place.</p>
+  </div>
+
+  <div class="card filter-card mb-3">
+    <div class="card-body">
+      <form method="get" class="form-inline">
+        <div class="form-group mr-2 mb-2">
+          <select name="session" class="form-control">
+            <option value="">All Sessions</option>
+            {% for sid, sname in sessions %}
+            <option value="{{ sid }}" {% if selected_session == sid|stringformat:'s' %}selected{% endif %}>{{ sname }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="semester" class="form-control">
+            <option value="">All Semesters</option>
+            {% for sem in semesters %}
+            <option value="{{ sem }}" {% if selected_semester == sem|stringformat:'s' %}selected{% endif %}>Semester {{ sem }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="exam_type" class="form-control">
+            <option value="">All Exam Types</option>
+            {% for exam_t, exam_label in exam_types %}
+            <option value="{{ exam_t }}" {% if selected_exam_type == exam_t %}selected{% endif %}>{{ exam_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2">
+          <select name="status" class="form-control">
+            <option value="">All Status</option>
+            {% for stat, stat_label in statuses %}
+            <option value="{{ stat }}" {% if selected_status == stat %}selected{% endif %}>{{ stat_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group mr-2 mb-2 flex-grow-1" style="min-width: 220px;">
+          <input type="text" id="examQuickSearch" class="form-control w-100" placeholder="Quick search by subject, exam type or session" />
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Apply</button>
+        <a href="{% url 'student_exam_schedule' %}" class="btn btn-outline-secondary mb-2 ml-2">Reset</a>
+      </form>
+      {% if filters_applied %}
+      <div class="chip-row mt-2">
+        <button type="button" class="quick-chip" data-chip="all">Show All</button>
+        <button type="button" class="quick-chip" data-chip="pending">Pending</button>
+        <button type="button" class="quick-chip" data-chip="conducted">Conducted</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if filters_applied %}
+  <div class="row mb-3 stats-grid">
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-total h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Total Exams</div>
+          <div class="metric-value">{{ summary.total }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-pending h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Pending</div>
+          <div class="metric-value">{{ summary.pending }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card metric-card metric-accent-done h-100">
+        <div class="card-body py-2">
+          <div class="metric-title">Conducted</div>
+          <div class="metric-value">{{ summary.conducted }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card table-card mb-3">
+    <div class="card-header">
+      <i class="fas fa-calendar-alt"></i>
+      <b>Scheduled Exam List</b>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Exam Type</th>
+              <th>Session</th>
+              <th>Semester</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Total Marks</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in exam_rows %}
+            <tr class="exam-row" data-status="{{ row.exam.status|lower }}">
+              <td class="subject-cell">{{ row.exam.subject.name }}</td>
+              <td class="examtype-cell">{{ row.exam.exam_type }}</td>
+              <td class="session-cell">{{ row.exam.session.name }}</td>
+              <td>Semester {{ row.exam.semester }}</td>
+              <td>
+                {% if row.exam.date_conducted %}
+                {{ row.exam.date_conducted|date:"d-M-Y" }}
+                {% else %}
+                <span class="muted-date">Not Scheduled</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if row.exam.exam_time %}
+                {{ row.exam.exam_time|time:"h:i A" }}
+                {% else %}
+                <span class="muted-date">Not Set</span>
+                {% endif %}
+              </td>
+              <td>{{ row.exam.total_marks }}</td>
+              <td>
+                {% if row.exam.status == 'Conducted' %}
+                <span class="status-pill status-conducted">Conducted</span>
+                {% else %}
+                <span class="status-pill status-pending">Pending</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center">No exams are scheduled for your profile yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="examEmptyState" class="empty-state d-none">No exams match the quick search/filter.</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    Select at least one filter and click <b>Apply</b> to view your scheduled exams.
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    var searchInput = document.getElementById('examQuickSearch');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.exam-row'));
+    var emptyState = document.getElementById('examEmptyState');
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.quick-chip'));
+    var currentChip = 'all';
+
+    function matchChip(row) {
+      var status = (row.getAttribute('data-status') || '').toLowerCase();
+      if (currentChip === 'pending') {
+        return status === 'pending';
+      }
+      if (currentChip === 'conducted') {
+        return status === 'conducted';
+      }
+      return true;
+    }
+
+    function matchSearch(row, query) {
+      if (!query) {
+        return true;
+      }
+      var subject = (row.querySelector('.subject-cell') || {}).textContent || '';
+      var examType = (row.querySelector('.examtype-cell') || {}).textContent || '';
+      var session = (row.querySelector('.session-cell') || {}).textContent || '';
+      var text = (subject + ' ' + examType + ' ' + session).toLowerCase();
+      return text.indexOf(query) !== -1;
+    }
+
+    function applyFilters() {
+      var query = (searchInput.value || '').trim().toLowerCase();
+      var visibleCount = 0;
+
+      rows.forEach(function (row) {
+        var visible = matchChip(row) && matchSearch(row, query);
+        row.style.display = visible ? '' : 'none';
+        if (visible) {
+          visibleCount += 1;
+        }
+      });
+
+      if (emptyState) {
+        emptyState.classList.toggle('d-none', visibleCount !== 0 || rows.length === 0);
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        currentChip = chip.getAttribute('data-chip') || 'all';
+        chips.forEach(function (item) { item.classList.remove('active'); });
+        chip.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    applyFilters();
+  })();
+</script>
+{% endblock %}

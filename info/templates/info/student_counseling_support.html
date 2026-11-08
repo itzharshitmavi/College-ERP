@@ -1,0 +1,104 @@
+{% extends 'info/base.html' %}
+
+{% block title %}Student Counseling Support{% endblock %}
+
+{% block css %}
+<style>
+  .surface-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(12, 42, 67, 0.08);
+  }
+  .status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+  .status-pending { background: #fff8e5; color: #8a6d1d; }
+  .status-in-progress { background: #eaf4ff; color: #1f4f7f; }
+  .status-resolved { background: #e8f7ed; color: #1f6f3c; }
+  .status-rejected { background: #fdecec; color: #8d2d2d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h3 class="mb-0">Counseling Support</h3>
+  <small class="text-muted">Private request routed to your department HOD.</small>
+</div>
+
+<div class="card surface-card mb-3">
+  <div class="card-body">
+    {% if target_hod_assignment %}
+    <div class="alert alert-info py-2 px-3" role="alert">
+      Request will be sent to
+      <strong>{{ target_hod_assignment.teacher.name }}</strong>
+      (HOD: {{ target_hod_assignment.department.name }}, Year {{ target_hod_assignment.year }}, {{ target_hod_assignment.course.name }}).
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="col-md-4 form-group">
+          <label for="id_subject">Subject</label>
+          {{ form.subject }}
+          {% if form.subject.errors %}<small class="text-danger">{{ form.subject.errors|join:', ' }}</small>{% endif %}
+        </div>
+        <div class="col-md-4 form-group">
+          <label for="id_preferred_date">Preferred Meeting Date</label>
+          {{ form.preferred_date }}
+          {% if form.preferred_date.errors %}<small class="text-danger">{{ form.preferred_date.errors|join:', ' }}</small>{% endif %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="id_concern">Concern</label>
+        {{ form.concern }}
+        {% if form.concern.errors %}<small class="text-danger">{{ form.concern.errors|join:', ' }}</small>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Submit Counseling Request</button>
+    </form>
+    {% else %}
+    <p class="mb-0 text-muted">No active HOD is assigned for your department/year right now. Please contact admin.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card surface-card">
+  <div class="card-body">
+    <h5 class="mb-3">My Counseling Requests</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>HOD</th>
+            <th>Subject</th>
+            <th>Concern</th>
+            <th>Preferred Date</th>
+            <th>Status</th>
+            <th>HOD Remark</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in counseling_requests %}
+          <tr>
+            <td>{{ req.hod_teacher.name }}</td>
+            <td>{{ req.subject }}</td>
+            <td>{{ req.concern|truncatechars:100 }}</td>
+            <td>{{ req.preferred_date|date:"d M Y"|default:'-' }}</td>
+            <td><span class="status-pill status-{{ req.status|lower|slugify }}">{{ req.status }}</span></td>
+            <td>{{ req.hod_remark|default:'-' }}</td>
+            <td>{{ req.created_at|date:"d M Y, h:i A" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No counseling requests found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

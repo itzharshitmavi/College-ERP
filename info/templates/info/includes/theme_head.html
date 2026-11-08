@@ -1,0 +1,106 @@
+<style>
+  body[data-theme='light'] {
+    --erp-page-bg: #f4f7fb;
+    --erp-text: #111827;
+    --erp-surface: #ffffff;
+    --erp-border: #d1d5db;
+    --erp-nav-bg: #ffffff;
+    --erp-nav-text: #1f2937;
+    --erp-muted: #6b7280;
+    --erp-link: #1d4ed8;
+  }
+
+  body[data-theme='dark'] {
+    --erp-page-bg: #0f172a;
+    --erp-text: #e5e7eb;
+    --erp-surface: #1e293b;
+    --erp-border: #334155;
+    --erp-nav-bg: #111827;
+    --erp-nav-text: #f3f4f6;
+    --erp-muted: #cbd5e1;
+    --erp-link: #93c5fd;
+  }
+
+  body[data-theme] {
+    color: var(--erp-text);
+    background-color: var(--erp-page-bg);
+  }
+
+  body[data-theme] .navbar.bg-dark,
+  body[data-theme] .navbar-dark.bg-dark {
+    background: var(--erp-nav-bg) !important;
+    border-bottom: 1px solid var(--erp-border);
+  }
+
+  body[data-theme] .navbar-dark .navbar-brand,
+  body[data-theme] .navbar-dark .navbar-nav .nav-link,
+  body[data-theme] .navbar-dark .navbar-toggler,
+  body[data-theme] .navbar-dark .navbar-text {
+    color: var(--erp-nav-text) !important;
+  }
+
+  body[data-theme] .card,
+  body[data-theme] .modal-content,
+  body[data-theme] .table,
+  body[data-theme] .dropdown-menu,
+  body[data-theme] .list-group-item,
+  body[data-theme] .form-control,
+  body[data-theme] .form-select,
+  body[data-theme] .custom-select,
+  body[data-theme] .input-group-text,
+  body[data-theme] .jumbotron,
+  body[data-theme] .teacher-id-card,
+  body[data-theme] .scrollable-container,
+  body[data-theme] .form-container,
+  body[data-theme] .summary-card,
+  body[data-theme] .quick-link-card,
+  body[data-theme] .note-item,
+  body[data-theme] .surface-card {
+    background-color: var(--erp-surface);
+    color: var(--erp-text);
+    border-color: var(--erp-border);
+  }
+
+  body[data-theme='dark'] .table-light th,
+  body[data-theme='dark'] .thead-light th,
+  body[data-theme='dark'] .card-header,
+  body[data-theme='dark'] .modal-header,
+  body[data-theme='dark'] .modal-footer,
+  body[data-theme='dark'] .table thead th {
+    background-color: #162235 !important;
+    color: var(--erp-text) !important;
+    border-color: var(--erp-border) !important;
+  }
+
+  body[data-theme='dark'] .text-muted,
+  body[data-theme='dark'] .meta,
+  body[data-theme='dark'] .label,
+  body[data-theme='dark'] small {
+    color: var(--erp-muted) !important;
+  }
+
+  body[data-theme] a:not(.btn) {
+    color: var(--erp-link);
+  }
+
+  .theme-toggle-floating {
+    position: fixed;
+    top: 70px;
+    right: 16px;
+    z-index: 2050;
+  }
+
+  .theme-toggle-floating .btn {
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    padding: 0.45rem 0.9rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 767.98px) {
+    .theme-toggle-floating {
+      top: 62px;
+      right: 12px;
+    }
+  }
+</style>
